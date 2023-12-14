@@ -11,7 +11,7 @@ interface AuthProviderProps {
 
 interface AuthContextData {
     user: UserEntity | null;
-    loading: boolean;
+    // loading: boolean;
     signIn: (user: UserEntity) => Promise<void>;
     signOut: () => Promise<void>;
     fillUser: (data: UserEntity) => void;
@@ -26,8 +26,6 @@ export function useAuth() {
 export default function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<UserEntity | null>(null);
 
-    const { isLoading } = useGetQueryUser();
-
     function fillUser(data: UserEntity) {
         setUser(data);
     }
@@ -35,7 +33,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     async function signIn(newUser: UserEntity) {
         try {
             await SecureStore.setItemAsync('token', newUser.remember_token);
-            axios.defaults.headers.authorization = `Bearer ${newUser.remember_token}`;
+            axios.defaults.headers.authorization = `${newUser.remember_token}`;
             setUser(newUser);
         } catch (error) {
             setUser(null);
@@ -57,7 +55,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     return (
         <AuthContext.Provider value={{
             user,
-            loading: isLoading,
+            // loading: isLoading,
             signIn,
             signOut,
             fillUser

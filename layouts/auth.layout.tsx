@@ -1,5 +1,8 @@
-import { Stack } from "../App";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
 import { LoginScreen, RegisterScreen } from "../screens";
+
+const Stack = createNativeStackNavigator();
 
 export default function AuthLayout() {
     return (
