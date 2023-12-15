@@ -1,12 +1,13 @@
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { StyleSheet, Text, ScrollView } from "react-native";
-import { Button, Divider, HelperText, TextInput } from 'react-native-paper';
+import { Button, HelperText, TextInput } from 'react-native-paper';
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { PasswordInput } from "../../components";
-import { UserEntity } from "../../types/user.entity";
+import { TRegisterPayload } from "../../types/user.entity";
 import useRegisterMutateUser from "../../hooks/use-register-mutate-user";
+import { useAppTheme } from "../../providers/with-react-paper-ui/with-react-paper-ui";
 
 type RootStackParamList = {
     Login: undefined;
@@ -25,8 +26,9 @@ const validationSchema = Yup.object({
 })
 
 export default function Register({ navigation: { navigate } }: any) {
+    const { colors } = useAppTheme();
     const { mutate, error, isPending } = useRegisterMutateUser();
-    const formik = useFormik<Omit<UserEntity, "id" | "remember_token"> & { confirmPassword: string }>({
+    const formik = useFormik<TRegisterPayload & { confirmPassword: string }>({
         initialValues: { name: '', email: '', password: '', confirmPassword: "" },
         validationSchema,
         onSubmit: (data) => {
@@ -42,6 +44,7 @@ export default function Register({ navigation: { navigate } }: any) {
                 {error.message}
             </HelperText>}
             <TextInput
+                activeOutlineColor={colors.orangeColor}
                 mode="outlined"
                 label="Name"
                 error={!!formik.errors.name}
@@ -54,6 +57,7 @@ export default function Register({ navigation: { navigate } }: any) {
                 {formik.errors.name}
             </HelperText>
             <TextInput
+                activeOutlineColor={colors.orangeColor}
                 mode="outlined"
                 label="Email"
                 error={!!formik.errors.email}
@@ -66,6 +70,7 @@ export default function Register({ navigation: { navigate } }: any) {
                 {formik.errors.email}
             </HelperText>
             <PasswordInput
+                activeOutlineColor={colors.orangeColor}
                 value={formik.values.password}
                 error={!!formik.errors.password}
                 onBlur={formik.handleBlur('password')}
@@ -75,6 +80,7 @@ export default function Register({ navigation: { navigate } }: any) {
                 {formik.errors.password}
             </HelperText>
             <PasswordInput
+                activeOutlineColor={colors.orangeColor}
                 label="Confirm Password"
                 value={formik.values.confirmPassword}
                 error={!!formik.errors.confirmPassword}
@@ -84,13 +90,13 @@ export default function Register({ navigation: { navigate } }: any) {
             <HelperText type="error" visible={!!formik.errors.confirmPassword}>
                 {formik.errors.confirmPassword}
             </HelperText>
-            <Button loading={isPending} style={styles.marginTop} mode="contained" onPress={formik.handleSubmit}>
+            <Button loading={isPending} disabled={isPending} style={styles.marginTop} buttonColor={colors.orangeColor} mode="contained" onPress={formik.handleSubmit}>
                 Регістрація
             </Button>
-            <Divider style={styles.marginTop} />
-            <Button loading={isPending} style={styles.marginTop} mode="contained" onPress={() => navigate("Login")}>
+            {/* <Divider style={[styles.marginTop, { height: 2 }]} />
+            <Button disabled={isPending} style={[styles.marginTop, {}]} buttonColor={colors.orangeColor} mode="contained" onPress={() => navigate("Login")}>
                 Якщо є аккаунт
-            </Button>
+            </Button> */}
         </ScrollView>
     )
 }

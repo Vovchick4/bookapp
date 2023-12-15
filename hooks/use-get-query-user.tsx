@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 import { getUser } from '../api';
 import { useAuth } from '../contexts/auth';
 
-export default function useGetQueryUser(oQueriesOpts = {}) {
+export default function useGetQueryUser() {
     const { user, fillUser: fillUser, signOut } = useAuth();
 
     return useQuery({
@@ -16,8 +16,6 @@ export default function useGetQueryUser(oQueriesOpts = {}) {
                 if (remember_token) {
                     axios.defaults.headers.authorization = `${remember_token}`;
                 }
-
-                console.log(axios.defaults.headers);
 
                 if (remember_token) {
                     // If token exists, execute the getUser() function to fetch user data
@@ -34,7 +32,6 @@ export default function useGetQueryUser(oQueriesOpts = {}) {
                 throw (error as any).response?.data || { message: 'An error occurred' };
             }
         },
-        enabled: true, // Enable the query based on token existence
-        ...oQueriesOpts,
+        enabled: !!user, // Enable the query based on token existence
     });
 }

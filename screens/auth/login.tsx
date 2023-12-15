@@ -5,8 +5,9 @@ import { Button, Divider, HelperText, TextInput } from 'react-native-paper';
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { PasswordInput } from "../../components";
+import { TLoginPayload } from "../../types/user.entity";
 import useLoginMutateUser from "../../hooks/use-login-mutate-user";
-import { UserEntity } from "../../types/user.entity";
+import { useAppTheme } from "../../providers/with-react-paper-ui/with-react-paper-ui";
 
 type RootStackParamList = {
     Login: undefined;
@@ -21,8 +22,9 @@ const validationSchema = Yup.object({
 })
 
 export default function Login({ navigation: { navigate } }: any) {
+    const { colors } = useAppTheme();
     const { mutate, error, isPending } = useLoginMutateUser();
-    const formik = useFormik<Omit<UserEntity, "id" | "name" | "remember_token">>({
+    const formik = useFormik<TLoginPayload>({
         initialValues: { email: '', password: '' },
         validationSchema,
         onSubmit: (data) => {
@@ -37,6 +39,7 @@ export default function Login({ navigation: { navigate } }: any) {
                 {error.message}
             </HelperText>}
             <TextInput
+                activeOutlineColor={colors.orangeColor}
                 mode="outlined"
                 label="Email"
                 error={!!formik.errors.email}
@@ -49,6 +52,7 @@ export default function Login({ navigation: { navigate } }: any) {
                 {formik.errors.email}
             </HelperText>
             <PasswordInput
+                activeOutlineColor={colors.orangeColor}
                 value={formik.values.password}
                 error={!!formik.errors.password}
                 onBlur={formik.handleBlur('password')}
@@ -57,11 +61,11 @@ export default function Login({ navigation: { navigate } }: any) {
             <HelperText type="error" visible={!!formik.errors.password}>
                 {formik.errors.password}
             </HelperText>
-            <Button loading={isPending} style={styles.marginTop} mode="contained" onPress={formik.handleSubmit}>
+            <Button loading={isPending} style={[styles.marginTop, { borderRadius: 15 }]} mode="contained" buttonColor={colors.orangeColor} onPress={formik.handleSubmit}>
                 Login
             </Button>
-            <Divider style={styles.marginTop} />
-            <Button loading={isPending} style={styles.marginTop} mode="contained" onPress={() => navigate("Register")}>
+            <Divider style={[styles.marginTop, { height: 2 }]} />
+            <Button loading={isPending} style={[styles.marginTop, { borderRadius: 15 }]} mode="contained" buttonColor={colors.orangeColor} onPress={() => navigate("Register")}>
                 Create account
             </Button>
         </View>

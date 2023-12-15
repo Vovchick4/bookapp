@@ -1,14 +1,18 @@
 import axios from "axios"
-import { UserEntity } from "../types/user.entity";
+import { TLoginPayload, TRegisterPayload, TCreateCompanyPayload } from "../types/user.entity";
 
 export const getUser = async () => {
     return (await axios.get('/auth/get')).data;
 }
 
-export const loginUser = async (data: Omit<UserEntity, "id" | "name" | "remember_token">) => {
+export const loginUser = async (data: TLoginPayload) => {
     return (await axios.post('/auth/login', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
 
-export const registerUser = async (data: Omit<UserEntity, "id" | "remember_token">) => {
+export const registerUser = async (data: TRegisterPayload) => {
     return (await axios.post('/auth/register', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
+}
+
+export const createCompany = async (data: { company: TCreateCompanyPayload, owner_id: string }) => {
+    return (await axios.post('/company/create', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }

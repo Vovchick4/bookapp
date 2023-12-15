@@ -1,9 +1,9 @@
 import axios from "axios";
 import * as SecureStore from 'expo-secure-store';
-import { useContext, createContext, useState } from "react";
+import { useContext, useState, useEffect, createContext } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { UserEntity } from "../types/user.entity";
-import useGetQueryUser from "../hooks/use-get-query-user";
 
 interface AuthProviderProps {
     children: JSX.Element;
@@ -26,14 +26,31 @@ export function useAuth() {
 export default function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<UserEntity | null>(null);
 
+    useEffect(() => {
+        getUserFromStorage();
+    }, []);
+
     function fillUser(data: UserEntity) {
         setUser(data);
+    }
+
+    async function getUserFromStorage() {
+        try {
+            const userData = await AsyncStorage.getItem('userData');
+            if (userData) {
+                const parsedUser = JSON.parse(userData);
+                setUser(parsedUser);
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     async function signIn(newUser: UserEntity) {
         try {
             await SecureStore.setItemAsync('token', newUser.remember_token);
             axios.defaults.headers.authorization = `${newUser.remember_token}`;
+            await AsyncStorage.setItem('userData', JSON.stringify(newUser));
             setUser(newUser);
         } catch (error) {
             setUser(null);
@@ -46,6 +63,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
             await SecureStore.deleteItemAsync('token');
             axios.defaults.headers.authorization = null;
             setUser(null);
+            await AsyncStorage.removeItem('userData');
         } catch (error) {
             setUser(null);
             console.log(error);

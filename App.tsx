@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { NavigationContainer } from '@react-navigation/native';
-
+import {
+  SafeAreaProvider,
+} from 'react-native-safe-area-context';
 import { Splash } from './components';
 import withProviders from './providers';
 import { useAuth } from './contexts/auth';
@@ -22,14 +24,16 @@ function AppContent({ user }: { user: UserEntity | null }) {
 function App() {
   const { user } = useAuth();
 
-  const { error, isLoading } = useGetQueryUser();
+  const { isLoading } = useGetQueryUser();
 
   if (isLoading) {
     return <Splash />
   }
 
   return (
-    <AppContent user={user} />
+    <SafeAreaProvider>
+      <AppContent user={user} />
+    </SafeAreaProvider>
   );
 }
 
