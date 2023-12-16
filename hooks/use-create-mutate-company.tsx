@@ -4,7 +4,7 @@ import { CompanyEntity, TCreateCompanyPayload } from "../types/user.entity";
 import { queryClient } from "../providers/with-react-query/with-react-query";
 
 export default function useCreateMutateCompany() {
-    return useMutation<CompanyEntity, Error, { company: TCreateCompanyPayload, owner_id: string }>(
+    return useMutation<CompanyEntity, Error, TCreateCompanyPayload>(
         {
             mutationKey: ["createCompany"],
             mutationFn: async (data) => {

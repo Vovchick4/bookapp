@@ -13,6 +13,6 @@ export const registerUser = async (data: TRegisterPayload) => {
     return (await axios.post('/auth/register', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
 
-export const createCompany = async (data: { company: TCreateCompanyPayload, owner_id: string }) => {
+export const createCompany = async (data: TCreateCompanyPayload) => {
     return (await axios.post('/company/create', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
