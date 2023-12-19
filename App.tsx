@@ -10,6 +10,7 @@ import { AuthLayout, DefaultLayout } from './layouts';
 import useGetQueryUser from './hooks/use-get-query-user';
 
 import type { UserEntity } from './types/user.entity';
+import { CalendarProvider } from './contexts/calendar';
 
 axios.defaults.baseURL = "http://app.backend.booking.wmapartments.com.ua/api";
 
@@ -32,7 +33,9 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <AppContent user={user} />
+      <CalendarProvider>
+        <AppContent user={user} />
+      </CalendarProvider>
     </SafeAreaProvider>
   );
 }

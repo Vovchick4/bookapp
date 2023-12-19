@@ -1,93 +1,151 @@
-import moment from "moment";
-import { useState } from "react";
-import { Agenda, AgendaEntry, AgendaSchedule, DateData } from "react-native-calendars";
-import { Text, View } from "react-native";
+import { format } from "date-fns-tz";
+import { List, Text } from "react-native-paper";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { CalendarList } from "react-native-calendars";
+import { StyleSheet, View, SafeAreaView, Dimensions } from "react-native";
 
-export const RenderItem = ({ item, dayIndex, daysTotal }: any) => (
-    <View style={{
-        backgroundColor: 'red',
-        borderRadius: 10,
-        elevation: 5,
-    }}>
-        <Text>{item.title}</Text>
-        <Text>{dayIndex} of {daysTotal}</Text>
-    </View>
-)
+// import { WeekCalendar } from "../components";
+import { useCalendar } from "../contexts/calendar";
+import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
-const data: AgendaSchedule = {
-    '2023-12-02': [ // Date in 'YYYY-MM-DD' format
-        {
-            name: 'Lunch Appointment',
-            height: 12,
-            day: '2023-12-02T13:20:00', // Date in ISO string format
+const WeekCalendar = lazy(() => import('../components/week-calendar'))
+
+const rooms = [
+    {
+        id: 1,
+        name: "Room 1",
+        bookings: [{
+            eventName: 'Meeting 1',
+            startDate: new Date('2023-12-20T09:00:00'),
+            endDate: new Date('2023-12-21T11:00:00'),
+            color: "red"
         },
-        // Add more items for this date if needed
-    ],
-    // Add more dates with their respective items as required
+        {
+            eventName: 'Meeting 2',
+            startDate: new Date('2023-12-23T09:00:00'),
+            endDate: new Date('2023-12-27T09:00:00'),
+            color: "black"
+        }]
+    },
+    {
+        id: 2,
+        name: "Room 2",
+        bookings: [{
+            eventName: 'Meeting 1',
+            startDate: new Date('2023-12-21T09:00:00'),
+            endDate: new Date('2023-12-21T11:00:00'),
+            color: 'blue'
+        },
+        {
+            eventName: 'Meeting 1',
+            startDate: new Date('2023-12-15T09:00:00'),
+            endDate: new Date('2023-12-17T11:00:00'),
+            color: 'blue'
+        }]
+    }
+]
+
+// Move the logic to calculate markedDates into a separate function
+const calculateMarkedDates = (rooms: any) => {
+    const markedDates: any = {};
+    rooms.forEach((room: any) => {
+        room.bookings.forEach((booking: any) => {
+            let currentDate = new Date(booking.startDate);
+            const endDate = new Date(booking.endDate);
+
+            while (currentDate <= endDate) {
+                const formattedDate = currentDate.toISOString().split('T')[0];
+                markedDates[formattedDate] = {
+                    marked: true,
+                    dotColor: booking.color,
+                    // Other properties you want to set for these dates
+                    // For example:
+                    // selected: true,
+                };
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        });
+    });
+    return markedDates;
 };
 
 export default function Home() {
-    const [events, setEvents] = useState({})
+    const { colors } = useAppTheme();
+    const [date, setDate] = useState<Date>(new Date());
+    const [markedDates, setMarkedDates] = useState({});
+    const { isVisibleFullCalendar, openModal } = useCalendar();
+    const { height: screenHeight } = Dimensions.get('window');
+    const halfScreenHeight = screenHeight / 2;
 
-    const renderItem = (item: AgendaEntry) => {
-        return (
-            <View>
-                <Text>{item.name}</Text>
-                {/* Render other details of the item */}
-            </View>
-        );
-    };
-
-    const renderEmptyDate = () => {
-        return (
-            <View>
-                <Text>This is empty date!</Text>
-            </View>
-        );
-    };
-
-    const loadItems = (day: DateData) => {
-        setTimeout(() => {
-            for (let i = -15; i < 85; i++) {
-                const time = day.timestamp + i * 24 * 60 * 60 * 1000;
-                const strTime = timeToString(time);
-
-                if (!events[strTime]) {
-                    events[strTime] = [];
-
-                    const numItems = Math.floor(Math.random() * 3 + 1);
-                    for (let j = 0; j < numItems; j++) {
-                        events[strTime].push({
-                            name: '',
-                            height: Math.max(50, Math.floor(Math.random() * 150)),
-                            day: strTime
-                        });
-                    }
-                }
-            }
-
-            const newItems: AgendaSchedule = {};
-            Object.keys(events).forEach(key => {
-                newItems[key] = events[key];
-            });
-            setEvents(newItems);
-        }, 1000);
-    };
+    useEffect(() => {
+        // Calculate markedDates when the modal is opened
+        if (isVisibleFullCalendar) {
+            const calculatedDates = calculateMarkedDates(rooms);
+            setMarkedDates(calculatedDates);
+        }
+    }, [isVisibleFullCalendar]);
 
     return (
-        <View style={{ flex: 1 }}>
-            <Agenda
-                testID="agenda"
-                items={events}
-                loadItemsForMonth={loadItems}
-                renderItem={(item) => renderItem(item)}
-                renderEmptyData={renderEmptyDate}
-            />
-        </View>
+        <SafeAreaView style={styles.safe}>
+            <List.Section style={{ height: isVisibleFullCalendar ? 'auto' : 0, margin: 0, paddingLeft: 0 }}>
+                <List.Accordion
+                    titleStyle={{ color: colors.menuColor }}
+                    style={{ margin: 0, padding: 0 }}
+                    title={`Сьогоднішня дата, ${format(new Date(), 'MMMM d, yyyy', { timeZone: 'Europe/Kiev' })}`}
+                    left={() => (<></>)}
+                    right={() => (<></>)}
+                    expanded={isVisibleFullCalendar}
+                    onPress={openModal}>
+                    <View style={{ paddingLeft: 0, alignItems: 'center', justifyContent: 'center' }}>
+                        <View style={{ maxHeight: halfScreenHeight }}>
+                            <CalendarList
+                                // Configure your calendar props here
+                                // For instance:
+                                style={{ padding: 0, margin: 0 }}
+                                current={date.toString()}
+                                pastScrollRange={12}
+                                futureScrollRange={12}
+                                scrollEnabled={true}
+                                showScrollIndicator={true}
+                                theme={{
+                                    calendarBackground: colors.surface,
+                                    textSectionTitleColor: 'black',
+                                    todayTextColor: colors.surface,
+                                    todayBackgroundColor: 'green',
+                                    dayTextColor: 'black',
+                                    arrowColor: 'red',
+                                    selectedDayTextColor: colors.surface,
+                                    selectedDayBackgroundColor: colors.menuColor,
+                                    // Add more custom styles as needed
+                                }}
+                                markedDates={markedDates}
+                                // Handle onDayPress or other calendar callbacks as needed
+                                onDayPress={(day) => setDate(new Date(day.dateString))}
+                            />
+                        </View>
+                    </View>
+                </List.Accordion>
+            </List.Section>
+
+            <Suspense fallback={<Text>loading data ...</Text>}>
+                <WeekCalendar date={date} rooms={rooms} />
+            </Suspense>
+        </SafeAreaView>
     )
 }
 
-function timeToString(dt: number) {
-    const date = new Date(dt);
-    return date.toISOString().split('T')[0]
-}
+const styles = StyleSheet.create({
+    safe: {
+        flex: 1,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: '100%', // Set the width to 100% for full width
+        backgroundColor: 'white',
+    },
+});
+

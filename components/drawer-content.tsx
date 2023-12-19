@@ -26,6 +26,14 @@ export default function DrawerContent(props: any) {
                     label="Calendar"
                     onPress={() => props.navigation.navigate("Calendar")}
                 />
+
+                <Drawer.Item
+                    rippleColor={colors.grayColor}
+                    style={{ backgroundColor: colors.surface, borderRadius: 15, width: '100%', marginLeft: 0 }}
+                    icon="account"
+                    label="Profile"
+                    onPress={() => props.navigation.navigate("Profile")}
+                />
             </ScrollView>
 
             <View style={{ borderTopColor: colors.grayColor, borderTopWidth: 1 }}>

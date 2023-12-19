@@ -16,7 +16,6 @@ export default function CreateCompany() {
     const { colors } = useAppTheme();
     const { user } = useAuth();
     const { mutate, error, isPending, reset } = useCreateMutateCompany();
-    console.log("🚀 ~ file: create-company.tsx:19 ~ CreateCompany ~ error:", error)
     const formik = useFormik<TCreateCompanyPayload>({
         initialValues: { name: '' },
         validationSchema,
