@@ -1,6 +1,6 @@
 import { format } from "date-fns-tz";
 import { List, Text } from "react-native-paper";
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { CalendarList } from "react-native-calendars";
 import { StyleSheet, View, SafeAreaView, Dimensions } from "react-native";
 
@@ -69,6 +69,32 @@ const calculateMarkedDates = (rooms: any) => {
     return markedDates;
 };
 
+const MemoMizedCl = ({ date, setDate, markedDates, colors }: any) => {
+    return (
+        useMemo(() => <CalendarList
+            // Configure your calendar props here
+            // For instance:
+            pastScrollRange={12}
+            futureScrollRange={12}
+            current={date.toString()}
+            theme={{
+                calendarBackground: colors.surface,
+                textSectionTitleColor: 'black',
+                todayTextColor: colors.surface,
+                todayBackgroundColor: 'green',
+                dayTextColor: 'black',
+                arrowColor: 'red',
+                selectedDayTextColor: colors.surface,
+                selectedDayBackgroundColor: colors.menuColor,
+                // Add more custom styles as needed
+            }}
+            markedDates={markedDates}
+            // Handle onDayPress or other calendar callbacks as needed
+            onDayPress={(day) => setDate(new Date(day.dateString))}
+        />, [date, markedDates])
+    )
+}
+
 export default function Home() {
     const { colors } = useAppTheme();
     const [date, setDate] = useState<Date>(new Date());
@@ -79,7 +105,7 @@ export default function Home() {
 
     useEffect(() => {
         // Calculate markedDates when the modal is opened
-        if (isVisibleFullCalendar) {
+        if (!markedDates || isVisibleFullCalendar) {
             const calculatedDates = calculateMarkedDates(rooms);
             setMarkedDates(calculatedDates);
         }
@@ -98,30 +124,7 @@ export default function Home() {
                     onPress={openModal}>
                     <View style={{ paddingLeft: 0, alignItems: 'center', justifyContent: 'center' }}>
                         <View style={{ maxHeight: halfScreenHeight }}>
-                            <CalendarList
-                                // Configure your calendar props here
-                                // For instance:
-                                style={{ padding: 0, margin: 0 }}
-                                current={date.toString()}
-                                pastScrollRange={12}
-                                futureScrollRange={12}
-                                scrollEnabled={true}
-                                showScrollIndicator={true}
-                                theme={{
-                                    calendarBackground: colors.surface,
-                                    textSectionTitleColor: 'black',
-                                    todayTextColor: colors.surface,
-                                    todayBackgroundColor: 'green',
-                                    dayTextColor: 'black',
-                                    arrowColor: 'red',
-                                    selectedDayTextColor: colors.surface,
-                                    selectedDayBackgroundColor: colors.menuColor,
-                                    // Add more custom styles as needed
-                                }}
-                                markedDates={markedDates}
-                                // Handle onDayPress or other calendar callbacks as needed
-                                onDayPress={(day) => setDate(new Date(day.dateString))}
-                            />
+                            <MemoMizedCl date={date} setDate={setDate} colors={colors} markedDates={markedDates} />
                         </View>
                     </View>
                 </List.Accordion>

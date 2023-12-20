@@ -99,15 +99,6 @@ export default function WeekCalendar({ date, rooms }: Props) {
                                                     {/* <Text>{room.name}</Text> */}
 
                                                     {events.map((event: any, eventIndex: number) => {
-                                                        // Calculate event duration in days
-                                                        const eventStart = new Date(event.startDate);
-                                                        const eventEnd = new Date(event.endDate);
-                                                        const durationInDays = differenceInCalendarDays(eventEnd, eventStart) + 1;
-                                                        //console.log("🚀 ~ file: week-calendar.tsx:134 ~ {events.map ~ durationInDays:", durationInDays)
-
-                                                        // Calculate the position of the event within the week
-                                                        const eventStartIndex = differenceInCalendarDays(eventStart, week[0]);
-
                                                         return (
                                                             <View
                                                                 key={eventIndex}
