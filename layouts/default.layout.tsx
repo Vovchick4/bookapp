@@ -11,6 +11,8 @@ import { DrawerContent } from "../components";
 import { useCalendar } from "../contexts/calendar";
 import { CompanyScreen, ProfileScreen } from "../screens";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import CreateEvent from "../screens/create-event";
+import UpdateEvent from "../screens/update-event";
 
 const HomeScreen = lazy(() => import('../screens/home'));
 
@@ -63,6 +65,26 @@ export default function DefaultLayout() {
                 <Drawer.Screen
                     name="Profile"
                     component={ProfileScreen}
+                />
+                <Stack.Screen
+                    name="CreateEvent"
+                    component={CreateEvent}
+                    options={({ navigation }) => ({
+                        title: 'Create Event',
+                        headerLeft: () => (
+                            <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => navigation.goBack()} />
+                        ),
+                    })}
+                />
+                <Stack.Screen
+                    name="UpdateEvent"
+                    component={UpdateEvent}
+                    options={({ navigation }) => ({
+                        title: 'Update Event',
+                        headerLeft: () => (
+                            <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => navigation.goBack()} />
+                        ),
+                    })}
                 />
             </Drawer.Navigator>
         ) : (

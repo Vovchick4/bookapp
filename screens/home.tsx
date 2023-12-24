@@ -1,12 +1,12 @@
-import { format } from "date-fns-tz";
-import { List, Text } from "react-native-paper";
-import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Text } from "react-native-paper";
 import { CalendarList } from "react-native-calendars";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { StyleSheet, View, SafeAreaView, Dimensions } from "react-native";
 
 // import { WeekCalendar } from "../components";
 import { useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import Collapsible from "react-native-collapsible";
 
 const WeekCalendar = lazy(() => import('../components/week-calendar'))
 
@@ -69,33 +69,7 @@ const calculateMarkedDates = (rooms: any) => {
     return markedDates;
 };
 
-const MemoMizedCl = ({ date, setDate, markedDates, colors }: any) => {
-    return (
-        useMemo(() => <CalendarList
-            // Configure your calendar props here
-            // For instance:
-            pastScrollRange={12}
-            futureScrollRange={12}
-            current={date.toString()}
-            theme={{
-                calendarBackground: colors.surface,
-                textSectionTitleColor: 'black',
-                todayTextColor: colors.surface,
-                todayBackgroundColor: 'green',
-                dayTextColor: 'black',
-                arrowColor: 'red',
-                selectedDayTextColor: colors.surface,
-                selectedDayBackgroundColor: colors.menuColor,
-                // Add more custom styles as needed
-            }}
-            markedDates={markedDates}
-            // Handle onDayPress or other calendar callbacks as needed
-            onDayPress={(day) => setDate(new Date(day.dateString))}
-        />, [date, markedDates])
-    )
-}
-
-export default function Home() {
+export default function Home({ navigation: { navigate } }: any) {
     const { colors } = useAppTheme();
     const [date, setDate] = useState<Date>(new Date());
     const [markedDates, setMarkedDates] = useState({});
@@ -113,25 +87,37 @@ export default function Home() {
 
     return (
         <SafeAreaView style={styles.safe}>
-            <List.Section style={{ height: isVisibleFullCalendar ? 'auto' : 0, margin: 0, paddingLeft: 0 }}>
-                <List.Accordion
-                    titleStyle={{ color: colors.menuColor }}
-                    style={{ margin: 0, padding: 0 }}
-                    title={`Сьогоднішня дата, ${format(new Date(), 'MMMM d, yyyy', { timeZone: 'Europe/Kiev' })}`}
-                    left={() => (<></>)}
-                    right={() => (<></>)}
-                    expanded={isVisibleFullCalendar}
-                    onPress={openModal}>
-                    <View style={{ paddingLeft: 0, alignItems: 'center', justifyContent: 'center' }}>
-                        <View style={{ maxHeight: halfScreenHeight }}>
-                            <MemoMizedCl date={date} setDate={setDate} colors={colors} markedDates={markedDates} />
-                        </View>
+            <Collapsible collapsed={!isVisibleFullCalendar}>
+                <View style={{ paddingLeft: 0, alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ maxHeight: halfScreenHeight }}>
+                        <CalendarList
+                            // Configure your calendar props here
+                            // For instance:
+                            monthFormat={'MMMM yyyy'}
+                            hideExtraDays={true}
+                            firstDay={1}
+                            current={date.toString()}
+                            theme={{
+                                calendarBackground: colors.surface,
+                                textSectionTitleColor: 'black',
+                                todayTextColor: colors.surface,
+                                todayBackgroundColor: 'green',
+                                dayTextColor: 'black',
+                                arrowColor: 'red',
+                                selectedDayTextColor: colors.surface,
+                                selectedDayBackgroundColor: colors.menuColor,
+                                // Add more custom styles as needed
+                            }}
+                            markedDates={markedDates}
+                            // Handle onDayPress or other calendar callbacks as needed
+                            onDayPress={(day) => setDate(new Date(day.dateString))}
+                        />
                     </View>
-                </List.Accordion>
-            </List.Section>
+                </View>
+            </Collapsible>
 
             <Suspense fallback={<Text>loading data ...</Text>}>
-                <WeekCalendar date={date} rooms={rooms} />
+                <WeekCalendar date={date} rooms={rooms} navigate={navigate} />
             </Suspense>
         </SafeAreaView>
     )

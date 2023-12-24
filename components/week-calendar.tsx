@@ -1,133 +1,155 @@
-import { useEffect, useState } from "react";
-import PagerView from "react-native-pager-view";
+import { useEffect, useRef, useState } from "react";
 import { format, utcToZonedTime } from "date-fns-tz";
-import { NativeSyntheticEvent, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { NativeSyntheticEvent, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { addDays, addMonths, differenceInCalendarDays, eachDayOfInterval, eachWeekOfInterval, endOfMonth, getDate, isSameDay, startOfMonth, startOfWeek, subDays } from "date-fns";
 
 import { useCalendar } from "../contexts/calendar";
+import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 type Props = {
     date: Date;
     rooms: any[];
+    navigate: any;
 };
 
-export default function WeekCalendar({ date, rooms }: Props) {
+export default function WeekCalendar({ date, rooms, navigate }: Props) {
+    const { colors } = useAppTheme();
     const { onChangeInterval } = useCalendar();
-    const [displayedDates, setDisplayedDates] = useState<Date[][]>([]);
+    const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
     const [pos, setPos] = useState(0);
+    const scrollViewRef = useRef<ScrollView | null>(null);
 
     useEffect(() => {
         if (date) {
             const initialDates = getDatesForMonth(date); // Initial two months
-            onChangeInterval(initialDates, 0);
             setDisplayedDates(initialDates);
+            onChangeInterval(initialDates, 0);
         }
     }, [date]);
 
     useEffect(() => {
-        if (displayedDates && displayedDates[pos] && displayedDates[pos][0]) {
+        if (displayedDates && displayedDates[pos + 6]) {
             onChangeInterval(displayedDates, pos); // get current date interval
         }
     }, [pos, displayedDates])
 
-    // const getDatesForRange = (baseDate: Date, months: number): Date[][] => {
-    //     const startDate = subDays(baseDate, months * 30);
-    //     const endDate = addDays(baseDate, months * 30);
-
-    //     const weeks = eachWeekOfInterval(
-    //         {
-    //             start: startDate,
-    //             end: endDate,
-    //         },
-    //         { weekStartsOn: 1 }
-    //     );
-
-    //     const dates = weeks.map((week) =>
-    //         eachDayOfInterval({
-    //             start: week,
-    //             end: addDays(week, 6),
-    //         })
-    //     );
-
-    //     return dates;
-    // };
-
     const handleScroll = (event: NativeSyntheticEvent<any>) => {
-        const { position, offset } = event.nativeEvent;
-        const totalPages = displayedDates.length;
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+        // console.log("🚀 ~ file: week-calendar.tsx:35 ~ handleScroll ~ contentOffset:", contentOffset, layoutMeasurement.width, contentSize.width)
 
-        //setCurrentDateInterval(`${format(displayedDates[position][0], 'MMM d')} - ${format(displayedDates[position][6], 'MMM d')}`); // get current date interval
-        setPos(position);
+        if (contentOffset.x < 10) {
+            loadPreviousData({ layoutMeasurement }); // Функція для підгрузки даних вліво
+        } else if (contentOffset.x > contentSize.width - layoutMeasurement.width - 100) {
+            loadNextData(); // Функція для підгрузки даних вправо
+        }
 
-        if (offset === 0 && (position === 0 || position === totalPages - 1)) {
-            const currentMonth = addMonths(displayedDates[position][0], position === 0 ? -1 : 1);
-            const newDates = getDatesForMonth(currentMonth);
 
-            const updatedDates = position === 0 ? [...newDates, ...displayedDates.slice(0, totalPages - 1)] : [...displayedDates.slice(1), ...newDates];
-            setDisplayedDates(updatedDates);
+        // // Визначаємо інтервал після того, як скрол зупинився з затримкою 200 мс
+        // const handleStopScrolling = setTimeout(() => {
+        const pageIndex = Math.floor(contentOffset.x / layoutMeasurement.width);
+        const posAfterScroll = pageIndex * (displayedDates.length / 7);
+        setPos(posAfterScroll);
+
+        //     // Підгрузка додаткових даних вліво або вправо
+
+        // }, 200);
+        // // Очищаємо таймаут при новому скролі
+        // clearTimeout(handleStopScrolling);
+    };
+
+    const loadPreviousData = ({ layoutMeasurement }: any) => {
+        // Логіка для підгрузки даних вліво
+        // Наприклад, якщо ви хочете завантажити попередні тижні
+        const newDates = getDatesForMonth(displayedDates[0], -7);
+
+        setDisplayedDates([...newDates, ...displayedDates]);
+
+        if (scrollViewRef.current) {
+            scrollViewRef.current.scrollTo({ x: layoutMeasurement.width, animated: false });
         }
     };
 
-    return (
-        <View style={styles.main}>
-            <PagerView style={styles.main} onPageScroll={handleScroll}>
-                {displayedDates.map((week, index) => {
-                    return (
-                        <View key={index}>
-                            <View style={styles.row}>
-                                {week.map((dt, index) => {
-                                    const text = format(dt, 'EEE');
+    const loadNextData = () => {
+        // Логіка для підгрузки даних вправо
+        // Наприклад, якщо ви хочете завантажити наступні тижні
+        const newDates = getDatesForMonth(displayedDates[displayedDates.length - 1], 1);
 
-                                    return (
-                                        <View key={index} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                                            <Text>{text}</Text>
-                                            <Text>{dt.getDate()}</Text>
-                                        </View>
-                                    )
-                                })}
+        setDisplayedDates([...displayedDates, ...newDates]);
+    };
+
+    const renderRoomRows = (week: any) => {
+        return rooms.map((room, roomIndex) => {
+            const endDate = addDays(week, 1);
+            const events = getEventsForRoomAndDay(room, week, endDate);
+
+            return (
+                <View key={roomIndex}>
+                    <TouchableOpacity onPress={() => navigate("CreateEvent")}>
+                        <View style={[styles.roomRow, { width: 50 }]}>
+                            <View style={[styles.roomCell, { borderRightColor: colors.menuColor }]}>
+                                {events.map((event: any, eventIndex: any) => (
+                                    <TouchableOpacity
+                                        key={eventIndex}
+                                        onPress={() => navigate("UpdateEvent", event)}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            zIndex: 9999,
+                                            height: '100%',
+                                            width: '100%',
+                                            borderRightWidth: 1,
+                                            borderRightColor: colors.menuColor,
+                                            backgroundColor: colors.menuColor,
+                                            opacity: 1,
+                                        }}
+                                    />
+                                ))}
                             </View>
-                            {/* Dispay cells of grid */}
-                            {rooms.map((room, roomIndex) => (
-                                <View key={roomIndex}>
-                                    <View style={styles.roomRow}>
-                                        {week.map((dt, dayIndex) => {
-                                            const endDate = addDays(dt, 1);
-                                            const events = getEventsForRoomAndDay(room, dt, endDate);
-
-                                            return (
-                                                <View key={dayIndex} style={styles.roomCell}>
-                                                    {/* <Text>{room.name}</Text> */}
-
-                                                    {events.map((event: any, eventIndex: number) => {
-                                                        return (
-                                                            <View
-                                                                key={eventIndex}
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: 0,
-                                                                    left: (0), // Adjust cellWidth as needed
-                                                                    height: '100%',
-                                                                    width: '100%', // Adjust cellWidth as needed
-                                                                    backgroundColor: event.color, // Set your desired background color
-                                                                    opacity: 0.5, // Adjust opacity as needed
-                                                                }}
-                                                            >
-                                                                {/* <Text>{event.eventName}</Text> */}
-                                                            </View>
-                                                        );
-                                                    })}
-                                                </View>
-                                            )
-                                        })}
-                                    </View>
-                                </View>
-                            ))}
                         </View>
-                    )
-                })}
-            </PagerView>
+                    </TouchableOpacity>
+                </View>
+            );
+        });
+    };
+
+    const renderWeekView = () => {
+        return <View style={[styles.main, { flexDirection: 'row' }]}>
+            <View>
+                <View style={{ paddingBottom: 35, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
+                    {/* <Text>1</Text> */}
+                </View>
+                <ScrollView style={{ width: 100 }}>
+                    {rooms.length > 0 && rooms.map((room, index) => (
+                        <View key={index} style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}>
+                            <Text>{room.name}</Text>
+                        </View>
+                    ))}
+                </ScrollView>
+            </View>
+
+            <ScrollView
+                ref={scrollViewRef}
+                horizontal
+                onScroll={handleScroll}
+                scrollEventThrottle={32}
+            >
+                {displayedDates.map((week, index) => (
+                    <View key={index}>
+                        <View style={[styles.row, { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor }]}>
+                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                                <Text style={{ textAlign: 'center' }}>{format(week, 'EEE', { timeZone: 'Europe/Kiev' })}</Text>
+                                <Text style={{ textAlign: 'center' }}>{week.getDate()}</Text>
+                            </View>
+                        </View>
+                        {renderRoomRows(week)}
+                    </View>
+                ))}
+            </ScrollView>
         </View>
-    )
+    };
+
+    return renderWeekView();
 }
 
 const getEventsForRoomAndDay = (room: any, startDate: Date, endDate: Date) => {
@@ -143,34 +165,17 @@ const getEventsForRoomAndDay = (room: any, startDate: Date, endDate: Date) => {
     return eventsForRoomAndDay;
 };
 
-const getDatesForMonth = (baseDate: Date): Date[][] => {
+const getDatesForMonth = (baseDate: Date, numberDays: number = 0): Date[] => {
     const kievTimeZone = 'Europe/Kiev';
-    const startDate = startOfMonth(baseDate);
-    const endDate = endOfMonth(baseDate);
+    const startDateKiev = utcToZonedTime(addDays(baseDate, numberDays), kievTimeZone);
+    const endDateKiev = utcToZonedTime(addDays(startDateKiev, 6), kievTimeZone);
 
-    // Встановлення часового поясу для початку і кінця місяця
-    const startDateKiev = utcToZonedTime(startDate, kievTimeZone);
-    const endDateKiev = utcToZonedTime(endDate, kievTimeZone);
+    const week = eachDayOfInterval({
+        start: startDateKiev,
+        end: endDateKiev,
+    });
 
-    console.log("Start of month in Kiev timezone:", startDateKiev);
-    console.log("End of month in Kiev timezone:", endDateKiev);
-
-    const weeks = eachWeekOfInterval(
-        {
-            start: startDateKiev,
-            end: endDateKiev,
-        },
-        { weekStartsOn: 1 }
-    );
-
-    const dates = weeks.map((week) =>
-        eachDayOfInterval({
-            start: week,
-            end: addDays(week, 6),
-        })
-    );
-
-    return dates;
+    return week;
 };
 
 const styles = StyleSheet.create({
@@ -218,8 +223,7 @@ const styles = StyleSheet.create({
     roomCell: {
         position: 'relative',
         height: 50,
-        borderWidth: 1,
-        borderColor: 'black',
+        borderRightWidth: 1,
         flex: 1, // Adjust the flex value to fit the cells within the view
         alignItems: 'center',
         justifyContent: 'center',

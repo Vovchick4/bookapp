@@ -9,7 +9,7 @@ interface CalendarContextData {
     currentInterval: string,
     isVisibleFullCalendar: boolean,
     openModal: () => void,
-    onChangeInterval: (date: Date[][], pos: number) => void,
+    onChangeInterval: (date: Date[], pos: number) => void,
 }
 
 
@@ -23,8 +23,9 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     const [currentInterval, setCurrentInterval] = useState('')
     const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false)
 
-    const onChangeInterval = (date: Date[][], pos: number) => {
-        setCurrentInterval(`${format(date[pos][0], 'MMM d', { timeZone: 'Europe/Kiev' })} - ${format(date[pos][6], 'MMM d, yyyy', { timeZone: 'Europe/Kiev' })}`);
+    const onChangeInterval = (date: Date[], pos: number) => {
+        setCurrentInterval(`${format(date[pos + 6], 'MMM, yyyy', { timeZone: 'Europe/Kiev' })}`);
+        // setCurrentInterval(`${format(date[pos + 1], 'MMM d', { timeZone: 'Europe/Kiev' })} - ${format(date[pos + 6], 'MMM d, yyyy', { timeZone: 'Europe/Kiev' })}`);
     }
 
     const openModal = () => {
