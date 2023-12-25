@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "../api";
 import { useAuth } from "../contexts/auth";
-import { TLoginPayload, UserEntity } from "../types/user.entity";
+import { TLoginPayload, IUserEntity } from "../types/user.entity";
 
 export default function useLoginMutateUser() {
     const { signIn } = useAuth();
 
-    return useMutation<UserEntity, Error, TLoginPayload>(
+    return useMutation<IUserEntity, Error, TLoginPayload>(
         {
             mutationKey: ["loginUser"],
             mutationFn: async (data) => {

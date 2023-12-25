@@ -1,7 +1,10 @@
-import { View } from "react-native";
+import { ScrollView } from "react-native";
+import { EventForm } from "../components";
 
-export default function CreateEvent() {
+export default function CreateEvent({ route }: any) {
     return (
-        <View></View>
+        <ScrollView>
+            <EventForm mode="create" eventData={{ roomName: route.params.roomName, startDate: route.params.startDate }} onSubmit={() => { }} />
+        </ScrollView>
     )
 }

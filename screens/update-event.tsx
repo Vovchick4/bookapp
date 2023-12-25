@@ -1,9 +1,10 @@
-import { View, Text } from "react-native";
+import { ScrollView } from "react-native";
+import { EventForm } from "../components";
 
 export default function UpdateEvent({ route }: any) {
     return (
-        <View>
-            <Text>{JSON.stringify(route, null, 4)}</Text>
-        </View>
+        <ScrollView>
+            <EventForm mode="update" eventData={{ ...route.params }} onSubmit={() => { }} />
+        </ScrollView>
     )
 }

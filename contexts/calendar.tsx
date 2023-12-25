@@ -1,11 +1,12 @@
 import { format } from "date-fns-tz";
-import { useContext, useState, useEffect, createContext } from "react";
+import { useContext, useState, useEffect, createContext, useRef } from "react";
 
 interface CalendarProviderProps {
     children: JSX.Element,
 }
 
 interface CalendarContextData {
+    saveHeaderButtonRef: React.MutableRefObject<null>,
     currentInterval: string,
     isVisibleFullCalendar: boolean,
     openModal: () => void,
@@ -20,6 +21,7 @@ export function useCalendar() {
 }
 
 export function CalendarProvider({ children }: CalendarProviderProps) {
+    const saveHeaderButtonRef = useRef(null);
     const [currentInterval, setCurrentInterval] = useState('')
     const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false)
 
@@ -33,7 +35,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     }
 
     return (
-        <CalendarContext.Provider value={{ isVisibleFullCalendar, currentInterval, openModal, onChangeInterval }}>
+        <CalendarContext.Provider value={{ saveHeaderButtonRef, isVisibleFullCalendar, currentInterval, openModal, onChangeInterval }}>
             {children}
         </CalendarContext.Provider>
     )

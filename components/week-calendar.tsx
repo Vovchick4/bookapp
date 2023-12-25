@@ -84,27 +84,49 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
 
             return (
                 <View key={roomIndex}>
-                    <TouchableOpacity onPress={() => navigate("CreateEvent")}>
+                    <TouchableOpacity onPress={() => navigate("CreateEvent", { roomId: room.id, roomName: room.name, startDate: new Date(week) })}>
                         <View style={[styles.roomRow, { width: 50 }]}>
                             <View style={[styles.roomCell, { borderRightColor: colors.menuColor }]}>
-                                {events.map((event: any, eventIndex: any) => (
-                                    <TouchableOpacity
-                                        key={eventIndex}
-                                        onPress={() => navigate("UpdateEvent", event)}
-                                        style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            zIndex: 9999,
-                                            height: '100%',
-                                            width: '100%',
-                                            borderRightWidth: 1,
-                                            borderRightColor: colors.menuColor,
-                                            backgroundColor: colors.menuColor,
-                                            opacity: 1,
-                                        }}
-                                    />
-                                ))}
+                                {events.map((event: any, eventIndex: any) => {
+                                    // const isFirst = eventIndex === 0;
+                                    // const isLast = eventIndex === events.length - 1;
+
+                                    // // Determine border styles for first and last elements
+                                    // const borderStyles: any = {};
+                                    // if (isFirst) {
+                                    //     borderStyles.borderLeftWidth = 1;
+                                    //     borderStyles.borderLeftColor = 'transparent'; // Hide the left border
+                                    //     borderStyles.borderRightWidth = 5; // Increase the right border width
+                                    //     borderStyles.borderRightColor = colors.menuColor;
+                                    //     borderStyles.
+                                    // }
+                                    // if (isLast) {
+                                    //     borderStyles.borderRightWidth = 1;
+                                    //     borderStyles.borderRightColor = 'transparent'; // Hide the right border
+                                    //     borderStyles.borderLeftWidth = 5; // Increase the left border width
+                                    //     borderStyles.borderLeftColor = colors.menuColor;
+                                    // }
+
+                                    return (
+                                        <TouchableOpacity
+                                            key={eventIndex}
+                                            onPress={() => navigate("UpdateEvent", { ...event, roomName: room.name })}
+                                            style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                zIndex: 9999,
+                                                height: '100%',
+                                                width: '100%',
+                                                opacity: 1,
+                                                borderRightWidth: 1,
+                                                borderRightColor: colors.menuColor,
+                                                backgroundColor: colors.menuColor
+                                                // transform: [{ skewX: '30deg' }, { skewY: '30deg' }]
+                                            }}
+                                        />
+                                    )
+                                })}
                             </View>
                         </View>
                     </TouchableOpacity>

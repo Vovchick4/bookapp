@@ -3,18 +3,18 @@ import * as SecureStore from 'expo-secure-store';
 import { useContext, useState, useEffect, createContext } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { UserEntity } from "../types/user.entity";
+import { IUserEntity } from "../types/user.entity";
 
 interface AuthProviderProps {
     children: JSX.Element;
 }
 
 interface AuthContextData {
-    user: UserEntity | null;
+    user: IUserEntity | null;
     // loading: boolean;
-    signIn: (user: UserEntity) => Promise<void>;
+    signIn: (user: IUserEntity) => Promise<void>;
     signOut: () => Promise<void>;
-    fillUser: (data: UserEntity) => void;
+    fillUser: (data: IUserEntity) => void;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -24,13 +24,13 @@ export function useAuth() {
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
-    const [user, setUser] = useState<UserEntity | null>(null);
+    const [user, setUser] = useState<IUserEntity | null>(null);
 
     useEffect(() => {
         getUserFromStorage();
     }, []);
 
-    function fillUser(data: UserEntity) {
+    function fillUser(data: IUserEntity) {
         setUser(data);
     }
 
@@ -46,7 +46,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         }
     }
 
-    async function signIn(newUser: UserEntity) {
+    async function signIn(newUser: IUserEntity) {
         try {
             await SecureStore.setItemAsync('token', newUser.remember_token);
             axios.defaults.headers.authorization = `${newUser.remember_token}`;

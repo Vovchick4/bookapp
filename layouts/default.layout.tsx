@@ -1,6 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Text, View } from "react-native";
-import { IconButton } from "react-native-paper";
+import { ActivityIndicator, IconButton } from "react-native-paper";
 import Svg, { G, Path } from "react-native-svg";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -11,10 +11,10 @@ import { DrawerContent } from "../components";
 import { useCalendar } from "../contexts/calendar";
 import { CompanyScreen, ProfileScreen } from "../screens";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
-import CreateEvent from "../screens/create-event";
-import UpdateEvent from "../screens/update-event";
 
 const HomeScreen = lazy(() => import('../screens/home'));
+const CreateEventScreen = lazy(() => import('../screens/create-event'));
+const UpdateEventScreen = lazy(() => import('../screens/update-event'));
 
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
@@ -57,7 +57,7 @@ export default function DefaultLayout() {
                     }}
                 >
                     {(props: any) => (
-                        <Suspense fallback={<Text>Loading calendar data ...</Text>}>
+                        <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
                             <HomeScreen {...props} />
                         </Suspense>
                     )}
@@ -66,26 +66,24 @@ export default function DefaultLayout() {
                     name="Profile"
                     component={ProfileScreen}
                 />
-                <Stack.Screen
+                <Drawer.Screen
                     name="CreateEvent"
-                    component={CreateEvent}
-                    options={({ navigation }) => ({
-                        title: 'Create Event',
-                        headerLeft: () => (
-                            <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => navigation.goBack()} />
-                        ),
-                    })}
-                />
-                <Stack.Screen
+                >
+                    {(props) => (
+                        <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
+                            <CreateEventScreen {...props} />
+                        </Suspense>
+                    )}
+                </Drawer.Screen>
+                <Drawer.Screen
                     name="UpdateEvent"
-                    component={UpdateEvent}
-                    options={({ navigation }) => ({
-                        title: 'Update Event',
-                        headerLeft: () => (
-                            <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => navigation.goBack()} />
-                        ),
-                    })}
-                />
+                >
+                    {(props) => (
+                        <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
+                            <UpdateEventScreen {...props} />
+                        </Suspense>
+                    )}
+                </Drawer.Screen>
             </Drawer.Navigator>
         ) : (
             <Stack.Navigator

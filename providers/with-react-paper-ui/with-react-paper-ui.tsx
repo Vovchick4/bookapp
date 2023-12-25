@@ -14,7 +14,12 @@ const theme = {
         ...MD2LightTheme.colors,
         menuColor: '#3F5F5A',
         orangeColor: '#ED8B26',
-        grayColor: "#91918F"
+        grayColor: "#91918F",
+        statusPaid: '#00FF00',
+        statusPending: "#c9c91a",
+        statusNoPaid: '#FF0000',
+        statusCanceled: '#808080',
+        statusDeposit: '#0000FF',
     },
 };
 
