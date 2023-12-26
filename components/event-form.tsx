@@ -9,7 +9,7 @@ import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-u
 import Collapsible from "react-native-collapsible";
 import { differenceInCalendarDays, differenceInDays, parseISO } from "date-fns";
 import { toDate } from "date-fns-tz";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 
 interface Props {
     mode?: string;
@@ -27,6 +27,7 @@ const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index 
 export default function EventForm({ mode, eventData, onSubmit }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
     const [expanded, setExpanded] = useState(true);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
     const { values, setValues, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
@@ -53,7 +54,8 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
             final_price: 0,
             down_payment: 0,
             payment_on_place: 0,
-            notes: ''
+            notes: '',
+            room_id: -1
         },
         onSubmit
     });
@@ -105,14 +107,16 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
     }, [mode, eventData.startDate, eventData.endDate, eventData.roomId])
 
     useEffect(() => {
-        StatusBar.setBackgroundColor(statusesColors[values.status]);
+        if (isFocused) {
+            StatusBar.setBackgroundColor(statusesColors[values.status]);
+        }
         navigation.setOptions({
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
             },
             title: values.client.name ? values.client.name + " - " + eventData.roomName : eventData.roomName || "Create book",
             headerRight: () => (
-                <IconButton icon="content-save" onPress={handleSubmit} />
+                <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
             ),
             headerLeft: () => (
                 <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => {
@@ -121,7 +125,7 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
                     setFieldValue('parents', 0);
                     setFieldValue('childrens', 0);
                     StatusBar.setBackgroundColor(colors.menuColor);
-                    navigation.goBack()
+                    navigation.goBack();
                 }} />
             ),
         });
@@ -129,7 +133,7 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
         return () => {
             navigation.setOptions({ title: "Create book" });
         }
-    }, [eventData.roomId, eventData.roomName, values.client.name, values.status])
+    }, [isFocused, eventData.roomId, eventData.roomName, values.client.name, values.status])
 
     // Inside your component
 
@@ -141,7 +145,7 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
 
     useEffect(() => {
         if (values.start_date && values.end_date) {
-            const daysDifference = differenceInDays(values.end_date, values.start_date);
+            const daysDifference = differenceInDays(values.end_date, new Date(values.start_date));
             const finalPrice = values.price_per_day * daysDifference;
             setFieldValue('final_price', finalPrice);
         }
