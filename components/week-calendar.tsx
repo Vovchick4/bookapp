@@ -28,7 +28,7 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
     }, [date]);
 
     useEffect(() => {
-        if (displayedDates && displayedDates[pos + 6]) {
+        if (displayedDates && displayedDates[pos + 4]) {
             onChangeInterval(displayedDates, pos); // get current date interval
         }
     }, [pos, displayedDates])
@@ -110,7 +110,7 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
                                     return (
                                         <TouchableOpacity
                                             key={eventIndex}
-                                            onPress={() => navigate("UpdateEvent", { ...event, roomName: room.name })}
+                                            onPress={() => navigate("UpdateEvent", { ...event, roomId: -1, roomName: room.name })}
                                             style={{
                                                 position: 'absolute',
                                                 top: 0,
@@ -144,7 +144,9 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
                 <ScrollView style={{ width: 100 }}>
                     {rooms.length > 0 && rooms.map((room, index) => (
                         <View key={index} style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}>
-                            <Text>{room.name}</Text>
+                            <TouchableOpacity onPress={() => navigate('UpdateRoom', room.id)}>
+                                <Text>{room.name}</Text>
+                            </TouchableOpacity>
                         </View>
                     ))}
                 </ScrollView>

@@ -26,7 +26,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false)
 
     const onChangeInterval = (date: Date[], pos: number) => {
-        setCurrentInterval(`${format(date[pos + 6], 'MMM, yyyy', { timeZone: 'Europe/Kiev' })}`);
+        setCurrentInterval(`${format(date[pos + 4], 'MMM, yyyy', { timeZone: 'Europe/Kiev' })}`);
         // setCurrentInterval(`${format(date[pos + 1], 'MMM d', { timeZone: 'Europe/Kiev' })} - ${format(date[pos + 6], 'MMM d, yyyy', { timeZone: 'Europe/Kiev' })}`);
     }
 

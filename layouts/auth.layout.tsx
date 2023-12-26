@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+import { StatusBar } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { LoginScreen, RegisterScreen } from "../screens";
@@ -9,15 +11,18 @@ export default function AuthLayout() {
     const { colors } = useAppTheme()
 
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerStyle: {
-                    backgroundColor: colors.menuColor // Set your desired background color
-                },
-                headerTintColor: colors.surface
-            }}>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-        </Stack.Navigator>
+        <Fragment>
+            <StatusBar backgroundColor={colors.menuColor} />
+            <Stack.Navigator
+                screenOptions={{
+                    headerStyle: {
+                        backgroundColor: colors.menuColor // Set your desired background color
+                    },
+                    headerTintColor: colors.surface
+                }}>
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Register" component={RegisterScreen} />
+            </Stack.Navigator>
+        </Fragment>
     )
 }

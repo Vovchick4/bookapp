@@ -1,6 +1,7 @@
-import { Text } from "react-native-paper";
+import { FAB, Portal, Text } from "react-native-paper";
 import { CalendarList } from "react-native-calendars";
 import { Suspense, lazy, useEffect, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import { StyleSheet, View, SafeAreaView, Dimensions } from "react-native";
 
 // import { WeekCalendar } from "../components";
@@ -73,7 +74,11 @@ export default function Home({ navigation: { navigate } }: any) {
     const { colors } = useAppTheme();
     const [date, setDate] = useState<Date>(new Date());
     const [markedDates, setMarkedDates] = useState({});
+    const [isFabOpen, setIsFabOpen] = useState(false);
+
+    const isFocused = useIsFocused();
     const { isVisibleFullCalendar, openModal } = useCalendar();
+
     const { height: screenHeight } = Dimensions.get('window');
     const halfScreenHeight = screenHeight / 2;
 
@@ -84,6 +89,8 @@ export default function Home({ navigation: { navigate } }: any) {
             setMarkedDates(calculatedDates);
         }
     }, [isVisibleFullCalendar]);
+
+    const onStateChange = ({ open }: { open: boolean }) => setIsFabOpen(pr => !pr);
 
     return (
         <SafeAreaView style={styles.safe}>
@@ -119,6 +126,28 @@ export default function Home({ navigation: { navigate } }: any) {
             <Suspense fallback={<Text>loading data ...</Text>}>
                 <WeekCalendar date={date} rooms={rooms} navigate={navigate} />
             </Suspense>
+
+            <Portal>
+                <FAB.Group
+                    open={isFabOpen}
+                    visible={isFocused}
+                    icon={'plus'}
+                    actions={[
+                        {
+                            icon: 'plus',
+                            label: 'Бронювання',
+                            onPress: () => navigate('CreateEvent', { roomId: -1 }),
+                        },
+                        {
+                            icon: 'bed',
+                            label: 'Додати помещкання',
+                            onPress: () => navigate('CreateRoom'),
+                        }
+                    ]}
+                    onStateChange={onStateChange}
+                    onPress={() => { }}
+                />
+            </Portal>
         </SafeAreaView>
     )
 }

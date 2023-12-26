@@ -1,8 +1,9 @@
 import axios from 'axios';
-import { NavigationContainer } from '@react-navigation/native';
 import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+
 import { Splash } from './components';
 import withProviders from './providers';
 import { useAuth } from './contexts/auth';
@@ -12,7 +13,7 @@ import useGetQueryUser from './hooks/use-get-query-user';
 import type { IUserEntity } from './types/user.entity';
 import { CalendarProvider } from './contexts/calendar';
 
-axios.defaults.baseURL = "http://app.backend.booking.wmapartments.com.ua/api";
+axios.defaults.baseURL = "https://app.backend.booking.wmapartments.com.ua/api";
 
 function AppContent({ user }: { user: IUserEntity | null }) {
   return (
@@ -27,7 +28,7 @@ function App() {
 
   const { isLoading } = useGetQueryUser();
 
-  if (isLoading) {
+  if (!user && isLoading) {
     return <Splash />
   }
 

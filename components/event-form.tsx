@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useFormik } from "formik";
-import { SafeAreaView, View } from "react-native";
+import { StatusBar, View } from "react-native";
 import { DatePickerInput } from 'react-native-paper-dates';
 import DropDown from "react-native-paper-dropdown";
 import { Button, Icon, IconButton, List, RadioButton, Surface, Text, TextInput } from "react-native-paper";
@@ -23,10 +23,6 @@ const dropStates = {
 }
 
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + 1 + "", value: index + 1 }));
-
-function countPrice(persons: number, price_per_day: number, price_per_person: number, daysDifference: number, deposit: number) {
-    return Math.abs((persons * price_per_person + (Math.abs(daysDifference) * price_per_day)) - deposit);
-}
 
 export default function EventForm({ mode, eventData, onSubmit }: Props) {
     const { colors } = useAppTheme();
@@ -103,10 +99,13 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
 
         if (mode === 'update') {
             setFieldValue('end_date', eventData.endDate || '');
+        } else {
+            setFieldValue('room_id', eventData.roomId);
         }
-    }, [mode, eventData.startDate, eventData.endDate])
+    }, [mode, eventData.startDate, eventData.endDate, eventData.roomId])
 
     useEffect(() => {
+        StatusBar.setBackgroundColor(statusesColors[values.status]);
         navigation.setOptions({
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
@@ -121,6 +120,7 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
                     setFieldValue('start_date', '');
                     setFieldValue('parents', 0);
                     setFieldValue('childrens', 0);
+                    StatusBar.setBackgroundColor(colors.menuColor);
                     navigation.goBack()
                 }} />
             ),
@@ -129,7 +129,7 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
         return () => {
             navigation.setOptions({ title: "Create book" });
         }
-    }, [eventData.roomName, values.client.name, values.status])
+    }, [eventData.roomId, eventData.roomName, values.client.name, values.status])
 
     // Inside your component
 
@@ -180,204 +180,206 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
     )
 
     return (
-        <View style={{ flex: 1, rowGap: 10, padding: 10 }}>
-            <DatePickerInput
-                mode="outlined"
-                locale="en"
-                label="start date"
-                inputMode="start"
-                value={values.start_date}
-                onChange={(date) => handleStartDateChange(date)}
-            />
-            <DatePickerInput
-                mode="outlined"
-                locale="en"
-                label="end date"
-                inputMode="end"
-                value={values.end_date}
-                onChange={(value) => setFieldValue('end_date', value)}
-                defaultValue={(new Date(values.start_date).getDate() + 1).toString()}
-            />
-            <DropDown
-                mode="outlined"
-                label="Дорослі:"
-                list={twentyElements}
-                value={values.parents}
-                activeColor={colors.orangeColor}
-                setValue={(value) => setFieldValue('parents', value)}
-                visible={dropStates.parent === dropsListState}
-                showDropDown={() => setDropsListState(dropStates.parent)}
-                onDismiss={() => setDropsListState(null)}
-            />
-            <DropDown
-                mode="outlined"
-                label="Діти:"
-                list={twentyElements}
-                value={values.childrens}
-                activeColor={colors.orangeColor}
-                setValue={(value) => setFieldValue('childrens', value)}
-                visible={dropStates.children === dropsListState}
-                showDropDown={() => setDropsListState(dropStates.children)}
-                onDismiss={() => setDropsListState(null)}
-            />
-            <Surface style={{ elevation: 5, borderRadius: 5, backgroundColor: colors.surface }}>
-                <Text style={{ padding: 10 }}>Статус бронювання:</Text>
-                <RadioButton.Group value={values.status} onValueChange={(value) => setFieldValue('status', value)}>
-                    {eventStatuses.map(({ label, value, color }) => (
-                        <RadioButton.Item key={value} label={label} color={color} value={value} />
-                    ))}
-                </RadioButton.Group>
-            </Surface>
-            <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
-                <Text>Інформація про клієнта:</Text>
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
+        <Fragment>
+            <View style={{ flex: 1, rowGap: 10, padding: 10 }}>
+                <DatePickerInput
                     mode="outlined"
-                    label="Name"
-                    // error={!!formik.errors.email}
-                    autoComplete="name"
-                    value={values.client.name}
-                    // onBlur={formik.handleBlur('email')}
-                    onChangeText={handleChange('client.name')}
+                    locale="en"
+                    label="start date"
+                    inputMode="start"
+                    value={values.start_date}
+                    onChange={(date) => handleStartDateChange(date)}
                 />
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
+                <DatePickerInput
                     mode="outlined"
-                    label="Phone"
-                    // error={!!formik.errors.email}
-                    autoComplete="tel"
-                    value={values.client.phone}
-                    // onBlur={formik.handleBlur('email')}
-                    onChangeText={handleChange('client.phone')}
+                    locale="en"
+                    label="end date"
+                    inputMode="end"
+                    value={values.end_date}
+                    onChange={(value) => setFieldValue('end_date', value)}
+                    defaultValue={(new Date(values.start_date).getDate() + 1).toString()}
                 />
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
+                <DropDown
                     mode="outlined"
-                    label="Email"
-                    // error={!!formik.errors.email}
-                    autoComplete="email"
-                    value={values.client.email}
-                    // onBlur={formik.handleBlur('email')}
-                    onChangeText={handleChange('client.email')}
+                    label="Дорослі:"
+                    list={twentyElements}
+                    value={values.parents}
+                    activeColor={colors.orangeColor}
+                    setValue={(value) => setFieldValue('parents', value)}
+                    visible={dropStates.parent === dropsListState}
+                    showDropDown={() => setDropsListState(dropStates.parent)}
+                    onDismiss={() => setDropsListState(null)}
                 />
-                <Button mode="contained" onPress={() => setExpanded(prev => !prev)}>
-                    Додаткова інформація:
-                </Button>
-                <Collapsible collapsed={expanded}>
+                <DropDown
+                    mode="outlined"
+                    label="Діти:"
+                    list={twentyElements}
+                    value={values.childrens}
+                    activeColor={colors.orangeColor}
+                    setValue={(value) => setFieldValue('childrens', value)}
+                    visible={dropStates.children === dropsListState}
+                    showDropDown={() => setDropsListState(dropStates.children)}
+                    onDismiss={() => setDropsListState(null)}
+                />
+                <Surface style={{ elevation: 5, borderRadius: 5, backgroundColor: colors.surface }}>
+                    <Text style={{ padding: 10 }}>Статус бронювання:</Text>
+                    <RadioButton.Group value={values.status} onValueChange={(value) => setFieldValue('status', value)}>
+                        {eventStatuses.map(({ label, value, color }) => (
+                            <RadioButton.Item key={value} label={label} color={color} value={value} />
+                        ))}
+                    </RadioButton.Group>
+                </Surface>
+                <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
+                    <Text>Інформація про клієнта:</Text>
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
+                        label="Name"
+                        // error={!!formik.errors.email}
+                        autoComplete="name"
+                        value={values.client.name}
+                        // onBlur={formik.handleBlur('email')}
+                        onChangeText={handleChange('client.name')}
+                    />
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
+                        label="Phone"
+                        // error={!!formik.errors.email}
+                        autoComplete="tel"
+                        value={values.client.phone}
+                        // onBlur={formik.handleBlur('email')}
+                        onChangeText={handleChange('client.phone')}
+                    />
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
+                        label="Email"
+                        // error={!!formik.errors.email}
+                        autoComplete="email"
+                        value={values.client.email}
+                        // onBlur={formik.handleBlur('email')}
+                        onChangeText={handleChange('client.email')}
+                    />
+                    <Button mode="contained" onPress={() => setExpanded(prev => !prev)}>
+                        Додаткова інформація:
+                    </Button>
+                    <Collapsible collapsed={expanded}>
+                        <View>
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="Street"
+                                // error={!!formik.errors.email}
+                                autoComplete="address-line1"
+                                value={values.client.street}
+                                // onBlur={formik.handleBlur('email')}
+                                onChangeText={handleChange('client.street')}
+                            />
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="House number"
+                                // error={!!formik.errors.email}
+                                autoComplete="address-line2"
+                                value={values.client.house_number}
+                                // onBlur={formik.handleBlur('email')}
+                                onChangeText={handleChange('client.house_number')}
+                            />
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="Apartment number"
+                                // error={!!formik.errors.email}
+                                autoComplete="address-line2"
+                                value={values.client.apartment_number}
+                                // onBlur={formik.handleBlur('email')}
+                                onChangeText={handleChange('client.apartment_number')}
+                            />
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="City"
+                                // error={!!formik.errors.email}
+                                value={values.client.city}
+                                // onBlur={formik.handleBlur('email')}
+                                onChangeText={handleChange('client.city')}
+                            />
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="Country"
+                                // error={!!formik.errors.email}
+                                value={values.client.country}
+                                // onBlur={formik.handleBlur('email')}
+                                onChangeText={handleChange('client.country')}
+                            />
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="Post code"
+                                // error={!!formik.errors.email}
+                                value={values.client.post_code}
+                                // onBlur={formik.handleBlur('email')}
+                                onChangeText={handleChange('client.post_code')}
+                            />
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="Passport"
+                                // error={!!formik.errors.email}
+                                value={values.client.passport}
+                                // onBlur={formik.handleBlur('email')}
+                                onChangeText={handleChange('client.passport')}
+                            />
+                        </View>
+                    </Collapsible>
+                </Surface>
+                <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
+                    <Text>Калькулятор ціни:</Text>
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
+                        label="Ціна за людину"
+                        value={String(values.price_per_person)}
+                        onChangeText={handleChange('price_per_person')}
+                    />
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
+                        label="Ціна за добу"
+                        value={String(values.price_per_day)}
+                        onChangeText={handleChange('price_per_day')}
+                    />
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
+                        label="Кінцева ціна"
+                        value={String(values.final_price)}
+                        onChangeText={handleChange('final_price')}
+                    />
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
+                        label="Завдаток"
+                        value={String(values.down_payment)}
+                        onChangeText={handleChange('down_payment')}
+                    />
                     <View>
-                        <TextInput
-                            activeOutlineColor={colors.orangeColor}
-                            mode="outlined"
-                            label="Street"
-                            // error={!!formik.errors.email}
-                            autoComplete="address-line1"
-                            value={values.client.street}
-                            // onBlur={formik.handleBlur('email')}
-                            onChangeText={handleChange('client.street')}
-                        />
-                        <TextInput
-                            activeOutlineColor={colors.orangeColor}
-                            mode="outlined"
-                            label="House number"
-                            // error={!!formik.errors.email}
-                            autoComplete="address-line2"
-                            value={values.client.house_number}
-                            // onBlur={formik.handleBlur('email')}
-                            onChangeText={handleChange('client.house_number')}
-                        />
-                        <TextInput
-                            activeOutlineColor={colors.orangeColor}
-                            mode="outlined"
-                            label="Apartment number"
-                            // error={!!formik.errors.email}
-                            autoComplete="address-line2"
-                            value={values.client.apartment_number}
-                            // onBlur={formik.handleBlur('email')}
-                            onChangeText={handleChange('client.apartment_number')}
-                        />
-                        <TextInput
-                            activeOutlineColor={colors.orangeColor}
-                            mode="outlined"
-                            label="City"
-                            // error={!!formik.errors.email}
-                            value={values.client.city}
-                            // onBlur={formik.handleBlur('email')}
-                            onChangeText={handleChange('client.city')}
-                        />
-                        <TextInput
-                            activeOutlineColor={colors.orangeColor}
-                            mode="outlined"
-                            label="Country"
-                            // error={!!formik.errors.email}
-                            value={values.client.country}
-                            // onBlur={formik.handleBlur('email')}
-                            onChangeText={handleChange('client.country')}
-                        />
-                        <TextInput
-                            activeOutlineColor={colors.orangeColor}
-                            mode="outlined"
-                            label="Post code"
-                            // error={!!formik.errors.email}
-                            value={values.client.post_code}
-                            // onBlur={formik.handleBlur('email')}
-                            onChangeText={handleChange('client.post_code')}
-                        />
-                        <TextInput
-                            activeOutlineColor={colors.orangeColor}
-                            mode="outlined"
-                            label="Passport"
-                            // error={!!formik.errors.email}
-                            value={values.client.passport}
-                            // onBlur={formik.handleBlur('email')}
-                            onChangeText={handleChange('client.passport')}
-                        />
+                        <Text>Ціна на місці:</Text>
+                        <Text>{values.payment_on_place}</Text>
                     </View>
-                </Collapsible>
-            </Surface>
-            <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
-                <Text>Калькулятор ціни:</Text>
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
-                    mode="outlined"
-                    label="Ціна за людину"
-                    value={String(values.price_per_person)}
-                    onChangeText={handleChange('price_per_person')}
-                />
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
-                    mode="outlined"
-                    label="Ціна за добу"
-                    value={String(values.price_per_day)}
-                    onChangeText={handleChange('price_per_day')}
-                />
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
-                    mode="outlined"
-                    label="Кінцева ціна"
-                    value={String(values.final_price)}
-                    onChangeText={handleChange('final_price')}
-                />
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
-                    mode="outlined"
-                    label="Завдаток"
-                    value={String(values.down_payment)}
-                    onChangeText={handleChange('down_payment')}
-                />
-                <View>
-                    <Text>Ціна на місці:</Text>
-                    <Text>{values.payment_on_place}</Text>
-                </View>
-            </Surface>
+                </Surface>
 
-            <TextInput
-                activeOutlineColor={colors.orangeColor}
-                multiline
-                mode="outlined"
-                label="Нотатка"
-                value={String(values.notes)}
-                onChangeText={handleChange('notes')}
-            />
-        </View>
+                <TextInput
+                    activeOutlineColor={colors.orangeColor}
+                    multiline
+                    mode="outlined"
+                    label="Нотатка"
+                    value={String(values.notes)}
+                    onChangeText={handleChange('notes')}
+                />
+            </View>
+        </Fragment>
     )
 }
