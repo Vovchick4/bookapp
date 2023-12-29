@@ -28,7 +28,7 @@ function App() {
 
   const { isLoading } = useGetQueryUser();
 
-  if (!user && isLoading) {
+  if (isLoading) {
     return <Splash />
   }
 

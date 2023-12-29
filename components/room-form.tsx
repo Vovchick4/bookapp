@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { StatusBar, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { Button, Checkbox, Icon, IconButton, Modal, Portal, Text, TextInput } from "react-native-paper";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import DropDown, { DropDownPropsInterface } from "react-native-paper-dropdown";
+import { Button, Checkbox, Icon, IconButton, Modal, Portal, Text, TextInput } from "react-native-paper";
 
+import { IRoomEntity } from "../types/room.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 interface Props {
     mode?: string;
-    roomData: any
+    roomId: number;
+    roomData: IRoomEntity;
     onSubmit: (data: any) => void;
 }
 
@@ -26,33 +28,57 @@ const roomTypes: DropDownPropsInterface['list'] = [{
     value: 'Квартира',
 }]
 
-const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + 1 + "", value: index + 1 }));
+const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + "", value: index }));
 
 const roomColors = [
     "#000000", "#111111", "#222222", "#333333", "#444444",
-    "#555555", "#666666", "#777777", "#888888", "#999999",
+    "#555555", "#838388", "#777777", "#888888", "#999999",
     "#AAAAAA", "#BBBBBB", "#CCCCCC", "#DDDDDD", "#EEEEEE",
     "#FFFFAA", "#FF0000", "#00FF00", "#0000FF", "#FFFF00"
 ];
 
-export default function RoomForm({ mode, roomData, onSubmit }: Props) {
+const initialValues = {
+    name: '',
+    type: 'Квартира',
+    count_room: 0,
+    additional_beds: 0,
+    number_of_single_beds: 0,
+    number_of_double_beds: 0,
+    color: roomColors[0],
+    with_color: false,
+}
+
+export default function RoomForm({ mode, roomId, roomData, onSubmit }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
     const [visible, setVisible] = useState(false);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
     const { values, setFieldValue, handleChange, handleSubmit, resetForm } = useFormik({
-        initialValues: {
-            name: '',
-            type: '',
-            count_room: 0,
-            additional_beds: 0,
-            number_of_single_beds: 0,
-            number_of_double_beds: 0,
-            color: roomColors[0],
-            with_color: false,
-        },
+        initialValues,
         onSubmit
     });
+
+    useFocusEffect(
+        useCallback(() => {
+            resetForm({ values: initialValues });
+        }, [])
+    );
+
+    useFocusEffect(
+        useCallback(() => {
+            if (roomData && mode === 'update' && roomId !== -1) {
+                console.log(roomData);
+
+                Object.keys(roomData).forEach((room) => {
+                    if (room !== 'id' && room !== 'company_id' && room !== 'created_at' && room !== 'updated_at') {
+                        if (roomData[room]) {
+                            setFieldValue(room, roomData[room]);
+                        }
+                    }
+                })
+            }
+        }, [mode, roomData, roomId])
+    );
 
     useEffect(() => {
         StatusBar.setBackgroundColor(values.with_color ? values.color : colors.menuColor);
@@ -66,7 +92,7 @@ export default function RoomForm({ mode, roomData, onSubmit }: Props) {
             ),
             headerLeft: () => (
                 <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => {
-                    resetForm();
+                    resetForm({ values: initialValues });
                     StatusBar.setBackgroundColor(colors.menuColor);
                     navigation.goBack()
                 }} />

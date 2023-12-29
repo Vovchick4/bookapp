@@ -4,15 +4,18 @@ import { NativeSyntheticEvent, SafeAreaView, ScrollView, StyleSheet, Text, Touch
 import { addDays, addMonths, differenceInCalendarDays, eachDayOfInterval, eachWeekOfInterval, endOfMonth, getDate, isSameDay, startOfMonth, startOfWeek, subDays } from "date-fns";
 
 import { useCalendar } from "../contexts/calendar";
+import { IRoomEntity } from "../types/room.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import { ActivityIndicator } from "react-native-paper";
 
 type Props = {
     date: Date;
-    rooms: any[];
     navigate: any;
+    isLoadingRooms: boolean;
+    rooms: IRoomEntity[] | undefined;
 };
 
-export default function WeekCalendar({ date, rooms, navigate }: Props) {
+export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: Props) {
     const { colors } = useAppTheme();
     const { onChangeInterval } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
@@ -77,17 +80,17 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
         setDisplayedDates([...displayedDates, ...newDates]);
     };
 
-    const renderRoomRows = (week: any) => {
-        return rooms.map((room, roomIndex) => {
+    const RenderRoomRows = ({ week }: { week: Date }) => {
+        return rooms && rooms.length !== 0 && rooms.map((room, roomIndex) => {
             const endDate = addDays(week, 1);
             const events = getEventsForRoomAndDay(room, week, endDate);
 
             return (
                 <View key={roomIndex}>
-                    <TouchableOpacity onPress={() => navigate("CreateEvent", { roomId: room.id, roomName: room.name, startDate: new Date(week) })}>
+                    <TouchableOpacity onPress={() => navigate("CalendarController", { mode: "create", is_room_vis: false, type: "event", room_id: room.id, roomName: room.name, start_date: new Date(week) })}>
                         <View style={[styles.roomRow, { width: 50 }]}>
                             <View style={[styles.roomCell, { borderRightColor: colors.menuColor }]}>
-                                {events.map((event: any, eventIndex: any) => {
+                                {events && events.length > 0 && events.map((event, eventIndex) => {
                                     // const isFirst = eventIndex === 0;
                                     // const isLast = eventIndex === events.length - 1;
 
@@ -110,7 +113,7 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
                                     return (
                                         <TouchableOpacity
                                             key={eventIndex}
-                                            onPress={() => navigate("UpdateEvent", { ...event, roomId: -1, roomName: room.name })}
+                                            onPress={() => navigate("CalendarController", { bookId: event.id, room_id: room.id, roomName: room.name, mode: "update", is_room_vis: false, type: "event" })}
                                             style={{
                                                 position: 'absolute',
                                                 top: 0,
@@ -135,21 +138,34 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
         });
     };
 
-    const renderWeekView = () => {
+    const RenderWeekView = () => {
         return <View style={[styles.main, { flexDirection: 'row' }]}>
             <View>
                 <View style={{ paddingBottom: 35, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
-                    {/* <Text>1</Text> */}
+                    {isLoadingRooms && (
+                        <View style={{ width: 100, marginTop: 15 }}>
+                            <ActivityIndicator animating />
+                        </View>
+                    )}
+
+                    {!isLoadingRooms && !rooms && <View style={{ width: 100, marginTop: 15, padding: 10 }}>
+                        <Text>
+                            Добавте помешкання
+                        </Text>
+                    </View>}
                 </View>
-                <ScrollView style={{ width: 100 }}>
-                    {rooms.length > 0 && rooms.map((room, index) => (
-                        <View key={index} style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}>
-                            <TouchableOpacity onPress={() => navigate('UpdateRoom', room.id)}>
+                {!isLoadingRooms && (
+                    <ScrollView style={{ width: 100 }}>
+                        {rooms && rooms.length > 0 && rooms.map((room, index) => (
+                            <TouchableOpacity
+                                key={index}
+                                style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}
+                                onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
                                 <Text>{room.name}</Text>
                             </TouchableOpacity>
-                        </View>
-                    ))}
-                </ScrollView>
+                        ))}
+                    </ScrollView>
+                )}
             </View>
 
             <ScrollView
@@ -166,24 +182,24 @@ export default function WeekCalendar({ date, rooms, navigate }: Props) {
                                 <Text style={{ textAlign: 'center' }}>{week.getDate()}</Text>
                             </View>
                         </View>
-                        {renderRoomRows(week)}
+                        <RenderRoomRows week={week} />
                     </View>
                 ))}
             </ScrollView>
         </View>
     };
 
-    return renderWeekView();
+    return RenderWeekView();
 }
 
-const getEventsForRoomAndDay = (room: any, startDate: Date, endDate: Date) => {
+const getEventsForRoomAndDay = (room: IRoomEntity, startDate: Date, endDate: Date) => {
     if (room.bookings.length === 0) {
         return []
     }
 
-    const eventsForRoomAndDay = room.bookings.filter((booking: any) =>
-        startDate <= booking.endDate &&
-        endDate >= booking.startDate
+    const eventsForRoomAndDay = room.bookings.filter((booking) =>
+        startDate <= new Date(booking.end_date) &&
+        endDate >= new Date(booking.start_date)
     );
 
     return eventsForRoomAndDay;

@@ -7,16 +7,14 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useAuth } from "../contexts/auth";
-import { DrawerContent, StatusBar } from "../components";
 import { useCalendar } from "../contexts/calendar";
+import { DrawerContent, StatusBar } from "../components";
 import { CompanyScreen, ProfileScreen } from "../screens";
+import CalendarController from "../screens/calendar-controller";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 const HomeScreen = lazy(() => import('../screens/home'));
-const CreateEventScreen = lazy(() => import('../screens/create-event'));
-const UpdateEventScreen = lazy(() => import('../screens/update-event'));
-const CreateRoomScreen = lazy(() => import('../screens/create-room'));
-const UpdateRoomScreen = lazy(() => import('../screens/update-room'));
+// const CalendarControllerScreen = lazy(() => import('../screens/calendar-controller'));
 
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
@@ -71,41 +69,12 @@ export default function DefaultLayout() {
                         component={ProfileScreen}
                     />
                     <Drawer.Screen
-                        name="CreateEvent"
-                    >
-                        {(props) => (
-                            <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
-                                <CreateEventScreen {...props} />
-                            </Suspense>
-                        )}
-                    </Drawer.Screen>
-                    <Drawer.Screen
-                        name="UpdateEvent"
-                    >
-                        {(props) => (
-                            <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
-                                <UpdateEventScreen {...props} />
-                            </Suspense>
-                        )}
-                    </Drawer.Screen>
-                    <Drawer.Screen
-                        name="CreateRoom"
-                    >
-                        {(props) => (
-                            <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
-                                <CreateRoomScreen {...props} />
-                            </Suspense>
-                        )}
-                    </Drawer.Screen>
-                    <Drawer.Screen
-                        name="UpdateRoom"
-                    >
-                        {(props) => (
-                            <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
-                                <UpdateRoomScreen {...props} />
-                            </Suspense>
-                        )}
-                    </Drawer.Screen>
+                        name="CalendarController"
+                        options={{
+                            title: "Загрузка..."
+                        }}
+                        component={CalendarController}
+                    />
                 </Drawer.Navigator>
             </Fragment>
         ) : (

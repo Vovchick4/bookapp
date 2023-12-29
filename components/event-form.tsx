@@ -1,64 +1,88 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useFormik } from "formik";
 import { StatusBar, View } from "react-native";
-import { DatePickerInput } from 'react-native-paper-dates';
 import DropDown from "react-native-paper-dropdown";
-import { Button, Icon, IconButton, List, RadioButton, Surface, Text, TextInput } from "react-native-paper";
-import { EventStatus } from "../types/event";
+import { DatePickerInput } from 'react-native-paper-dates';
+import { useFocusEffect, useIsFocused, useNavigation } from "@react-navigation/native";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Button, Icon, IconButton, List, RadioButton, Surface, Text, TextInput } from "react-native-paper";
+import { EventStatus, IEventEntity } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import Collapsible from "react-native-collapsible";
 import { differenceInCalendarDays, differenceInDays, parseISO } from "date-fns";
-import { toDate } from "date-fns-tz";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
 
 interface Props {
     mode?: string;
-    eventData: any
+    is_room_vis: boolean;
+    start_date: Date | undefined;
+    room_id: number;
+    roomName: string;
+    eventData: IEventEntity;
     onSubmit: (data: any) => void;
+}
+
+interface Values {
+    start_date: Date | undefined;
+    end_date: Date | undefined;
+    parents: number;
+    childrens: number;
+    status: EventStatus;
+    client: any;
+    price_per_person: number;
+    price_per_day: number;
+    final_price: number;
+    down_payment: number;
+    payment_on_place: number;
+    notes: string;
+    room_id: number;
 }
 
 const dropStates = {
     parent: 'parent',
     children: 'children',
+    room: 'room',
 }
 
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + 1 + "", value: index + 1 }));
 
-export default function EventForm({ mode, eventData, onSubmit }: Props) {
+const initialValues: Values = {
+    start_date: undefined,
+    end_date: undefined,
+    parents: 0,
+    childrens: 0,
+    status: EventStatus.pending,
+    client: {
+        name: '',
+        phone: '',
+        email: '',
+        street: '',
+        house_number: '',
+        apartment_number: '',
+        city: '',
+        country: '',
+        post_code: '',
+        passport: '',
+    },
+    price_per_person: 0,
+    price_per_day: 0,
+    final_price: 0,
+    down_payment: 0,
+    payment_on_place: 0,
+    notes: '',
+    room_id: -1
+}
+
+export default function EventForm({ mode, start_date, room_id, is_room_vis, eventData, onSubmit }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
     const isFocused = useIsFocused();
     const [expanded, setExpanded] = useState(true);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
     const { values, setValues, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
-        initialValues: {
-            start_date: eventData.startDate ? eventData.startDate : '',
-            end_date: mode === "update" ? eventData.endDate : '',
-            parents: 0,
-            childrens: 0,
-            status: EventStatus.pending,
-            client: {
-                name: '',
-                phone: '',
-                email: '',
-                street: '',
-                house_number: '',
-                apartment_number: '',
-                city: '',
-                country: '',
-                post_code: '',
-                passport: '',
-            },
-            price_per_person: 0,
-            price_per_day: 0,
-            final_price: 0,
-            down_payment: 0,
-            payment_on_place: 0,
-            notes: '',
-            room_id: -1
-        },
+        initialValues,
         onSubmit
     });
+    const { data: roomsNames, isLoading: isLoadingRoomsNames } = useGetQueryRoomsNames({ mode: mode || '' });
 
     const eventStatuses = useMemo(() => ([
         {
@@ -96,15 +120,43 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
         [EventStatus.canceled]: colors.statusCanceled,
     }), [values.status])
 
-    useEffect(() => {
-        setFieldValue('start_date', eventData.startDate || '');
+    useFocusEffect(
+        useCallback(() => {
+            resetForm({ values: initialValues });
+        }, [])
+    );
 
-        if (mode === 'update') {
-            setFieldValue('end_date', eventData.endDate || '');
-        } else {
-            setFieldValue('room_id', eventData.roomId);
-        }
-    }, [mode, eventData.startDate, eventData.endDate, eventData.roomId])
+    useFocusEffect(
+        useCallback(() => {
+            if (eventData && mode === 'update') {
+                console.log("🚀 ~ file: event-form.tsx:132 ~ useCallback ~ eventData:", eventData)
+                Object.keys(eventData).forEach((event) => {
+                    if (event !== 'id') {
+                        if (eventData[event]) {
+                            setValues((prev) => ({
+                                ...prev,
+                                [event]: eventData[event]
+                            }));
+                        }
+                    }
+                })
+            }
+        }, [mode, eventData])
+    );
+
+    useFocusEffect(
+        useCallback(() => {
+            if (room_id && room_id === -1) {
+                setFieldValue('room_id', Number(room_id));
+            }
+            if (mode === 'create' && start_date !== undefined) {
+                setValues((prev) => ({
+                    ...prev,
+                    start_date
+                }));
+            }
+        }, [mode, start_date, room_id])
+    );
 
     useEffect(() => {
         if (isFocused) {
@@ -114,7 +166,7 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
             },
-            title: values.client.name ? values.client.name + " - " + eventData.roomName : eventData.roomName || "Create book",
+            title: values.client.name ? values.client.name : "Book",
             headerRight: () => (
                 <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
             ),
@@ -129,11 +181,7 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
                 }} />
             ),
         });
-
-        return () => {
-            navigation.setOptions({ title: "Create book" });
-        }
-    }, [isFocused, eventData.roomId, eventData.roomName, values.client.name, values.status])
+    }, [isFocused, values.client.name, values.status])
 
     // Inside your component
 
@@ -163,25 +211,27 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
                 return;
             }
 
-            const startDate = value;
+            const start_date = value;
 
             // Set start date
-            setFieldValue('start_date', startDate);
+            setFieldValue('start_date', start_date);
 
             // Update end date to one day more than start date
-            const endDate = new Date(startDate);
+            const endDate = new Date(start_date);
             endDate.setDate(endDate.getDate() + 1);
             setFieldValue('end_date', endDate);
 
             // Update values in formik directly
             setValues((prevValues) => ({
                 ...prevValues,
-                start_date: startDate,
+                start_date: start_date,
                 end_date: endDate,
             }));
         },
         [values.start_date],
     )
+
+    console.log(values);
 
     return (
         <Fragment>
@@ -201,8 +251,22 @@ export default function EventForm({ mode, eventData, onSubmit }: Props) {
                     inputMode="end"
                     value={values.end_date}
                     onChange={(value) => setFieldValue('end_date', value)}
-                    defaultValue={(new Date(values.start_date).getDate() + 1).toString()}
+                    defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
                 />
+                {isLoadingRoomsNames && <ActivityIndicator animating />}
+                {(!isLoadingRoomsNames && is_room_vis && mode === 'create' && roomsNames && roomsNames.length > 0) && (
+                    <DropDown
+                        mode="outlined"
+                        label="Вибір кімнати:"
+                        list={roomsNames.map(({ name, id }) => ({ label: name, value: id }))}
+                        value={values.room_id === -1 ? undefined : values.room_id}
+                        activeColor={colors.orangeColor}
+                        setValue={(value) => setFieldValue('room_id', Number(value))}
+                        visible={dropStates.room === dropsListState}
+                        showDropDown={() => setDropsListState(dropStates.room)}
+                        onDismiss={() => setDropsListState(null)}
+                    />
+                )}
                 <DropDown
                     mode="outlined"
                     label="Дорослі:"
