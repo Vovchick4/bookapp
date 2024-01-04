@@ -1,15 +1,16 @@
 import { useFormik } from "formik";
-import { StatusBar, View } from "react-native";
+import { Alert, StatusBar, View } from "react-native";
 import DropDown from "react-native-paper-dropdown";
 import { DatePickerInput } from 'react-native-paper-dates';
 import { useFocusEffect, useIsFocused, useNavigation } from "@react-navigation/native";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Button, Icon, IconButton, List, RadioButton, Surface, Text, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button, IconButton, RadioButton, Surface, Text, TextInput } from "react-native-paper";
 import { EventStatus, IEventEntity } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import Collapsible from "react-native-collapsible";
-import { differenceInCalendarDays, differenceInDays, parseISO } from "date-fns";
+import { differenceInDays, format } from "date-fns";
 import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
+import { utcToZonedTime } from "date-fns-tz";
 
 interface Props {
     mode?: string;
@@ -19,6 +20,7 @@ interface Props {
     roomName: string;
     eventData: IEventEntity;
     onSubmit: (data: any) => void;
+    deleteEvent: () => void;
 }
 
 interface Values {
@@ -27,7 +29,6 @@ interface Values {
     parents: number;
     childrens: number;
     status: EventStatus;
-    client: any;
     price_per_person: number;
     price_per_day: number;
     final_price: number;
@@ -35,6 +36,16 @@ interface Values {
     payment_on_place: number;
     notes: string;
     room_id: number;
+    name: string;
+    phone: string;
+    email: string;
+    street: string;
+    house_number: string;
+    apartment_number: string;
+    city: string;
+    country: string;
+    post_code: string;
+    passport: string;
 }
 
 const dropStates = {
@@ -51,18 +62,16 @@ const initialValues: Values = {
     parents: 0,
     childrens: 0,
     status: EventStatus.pending,
-    client: {
-        name: '',
-        phone: '',
-        email: '',
-        street: '',
-        house_number: '',
-        apartment_number: '',
-        city: '',
-        country: '',
-        post_code: '',
-        passport: '',
-    },
+    name: '',
+    phone: '',
+    email: '',
+    street: '',
+    house_number: '',
+    apartment_number: '',
+    city: '',
+    country: '',
+    post_code: '',
+    passport: '',
     price_per_person: 0,
     price_per_day: 0,
     final_price: 0,
@@ -72,7 +81,10 @@ const initialValues: Values = {
     room_id: -1
 }
 
-export default function EventForm({ mode, start_date, room_id, is_room_vis, eventData, onSubmit }: Props) {
+// Define your target time zone (e.g., 'Europe/Kiev')
+const targetTimeZone = 'Europe/Kiev';
+
+export default function EventForm({ mode, start_date, room_id, is_room_vis, eventData, onSubmit, deleteEvent }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
     const isFocused = useIsFocused();
@@ -118,7 +130,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
         [EventStatus.deposit]: colors.statusDeposit,
         [EventStatus.nopaid]: colors.statusNoPaid,
         [EventStatus.canceled]: colors.statusCanceled,
-    }), [values.status])
+    }), [])
 
     useFocusEffect(
         useCallback(() => {
@@ -128,15 +140,27 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
 
     useFocusEffect(
         useCallback(() => {
+            if (room_id) {
+                setFieldValue('room_id', room_id);
+            }
+        }, [room_id])
+    );
+
+    useFocusEffect(
+        useCallback(() => {
             if (eventData && mode === 'update') {
-                console.log("🚀 ~ file: event-form.tsx:132 ~ useCallback ~ eventData:", eventData)
+                // console.log("🚀 ~ file: event-form.tsx:132 ~ useCallback ~ eventData:", eventData)
                 Object.keys(eventData).forEach((event) => {
-                    if (event !== 'id') {
+                    if (event !== 'id' && event !== 'rooms_id' && event !== 'created_at' && event !== 'updated_at') {
                         if (eventData[event]) {
-                            setValues((prev) => ({
-                                ...prev,
-                                [event]: eventData[event]
-                            }));
+                            if (event === 'start_date' || event === 'end_date') {
+                                // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", new Date(eventData[event]))
+                                setFieldValue('start_date', new Date(eventData["start_date"]));
+                                setFieldValue('end_date', new Date(eventData["end_date"]));
+                            } else {
+                                // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", event)
+                                setFieldValue(event, eventData[event]);
+                            }
                         }
                     }
                 })
@@ -146,16 +170,13 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
 
     useFocusEffect(
         useCallback(() => {
-            if (room_id && room_id === -1) {
-                setFieldValue('room_id', Number(room_id));
-            }
             if (mode === 'create' && start_date !== undefined) {
-                setValues((prev) => ({
-                    ...prev,
-                    start_date
-                }));
+                const selectedDate = new Date(start_date);
+                selectedDate.setHours(0, 0, 0, 0);
+                const startDateInTargetZone = format(utcToZonedTime(selectedDate, targetTimeZone), 'yyyy-MM-dd');
+                setFieldValue('start_date', new Date(startDateInTargetZone));
             }
-        }, [mode, start_date, room_id])
+        }, [mode, start_date])
     );
 
     useEffect(() => {
@@ -166,9 +187,30 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
             },
-            title: values.client.name ? values.client.name : "Book",
+            title: values.name ? values.name : "Book",
             headerRight: () => (
-                <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
+                <View style={{ flexDirection: 'row' }}>
+                    <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
+                    {mode === 'update' && <IconButton
+                        icon="trash-can"
+                        iconColor={colors.surface}
+                        onPress={() => {
+                            Alert.alert(
+                                'Ви дійсно хочете видалити бронювання?',
+                                '',
+                                [
+                                    {
+                                        text: 'Ні', // Button text
+                                    },
+                                    {
+                                        text: 'Так', // Button text
+                                        onPress: deleteEvent
+                                    },
+                                ],
+                            )
+                        }}
+                    />}
+                </View>
             ),
             headerLeft: () => (
                 <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => {
@@ -181,7 +223,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                 }} />
             ),
         });
-    }, [isFocused, values.client.name, values.status])
+    }, [isFocused, values.name, values.status])
 
     // Inside your component
 
@@ -211,27 +253,32 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                 return;
             }
 
-            const start_date = value;
+            // Reset the time part to avoid time zone offset issues
+            const selectedDate = new Date(value);
+            selectedDate.setHours(0, 0, 0, 0);
+
+            // Convert received date to target time zone
+            const startDateInTargetZone = format(utcToZonedTime(selectedDate, targetTimeZone), 'yyyy-MM-dd');
 
             // Set start date
-            setFieldValue('start_date', start_date);
+            setFieldValue('start_date', new Date(startDateInTargetZone));
 
-            // Update end date to one day more than start date
-            const endDate = new Date(start_date);
-            endDate.setDate(endDate.getDate() + 1);
-            setFieldValue('end_date', endDate);
+            // Calculate end date in the same time zone
+            const endDateInTargetZone = new Date(startDateInTargetZone);
+            endDateInTargetZone.setDate(endDateInTargetZone.getDate() + 1);
 
-            // Update values in formik directly
-            setValues((prevValues) => ({
-                ...prevValues,
-                start_date: start_date,
-                end_date: endDate,
-            }));
+            // Set end date
+            setFieldValue('end_date', endDateInTargetZone);
+
+            // Log formatted dates for confirmation (optional)
+            // console.log('Start Date:', format(startDateInTargetZone, 'yyyy-MM-dd HH:mm:ssXXX'));
+            // console.log('End Date:', format(endDateInTargetZone, 'yyyy-MM-dd HH:mm:ssXXX'));
         },
-        [values.start_date],
-    )
+        [setFieldValue]
+    );
 
     console.log(values);
+    // console.log(values.start_date, values.end_date);
 
     return (
         <Fragment>
@@ -305,9 +352,9 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         label="Name"
                         // error={!!formik.errors.email}
                         autoComplete="name"
-                        value={values.client.name}
+                        value={values.name}
                         // onBlur={formik.handleBlur('email')}
-                        onChangeText={handleChange('client.name')}
+                        onChangeText={handleChange('name')}
                     />
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
@@ -315,9 +362,9 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         label="Phone"
                         // error={!!formik.errors.email}
                         autoComplete="tel"
-                        value={values.client.phone}
+                        value={values.phone}
                         // onBlur={formik.handleBlur('email')}
-                        onChangeText={handleChange('client.phone')}
+                        onChangeText={handleChange('phone')}
                     />
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
@@ -325,9 +372,9 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         label="Email"
                         // error={!!formik.errors.email}
                         autoComplete="email"
-                        value={values.client.email}
+                        value={values.email}
                         // onBlur={formik.handleBlur('email')}
-                        onChangeText={handleChange('client.email')}
+                        onChangeText={handleChange('email')}
                     />
                     <Button mode="contained" onPress={() => setExpanded(prev => !prev)}>
                         Додаткова інформація:
@@ -340,9 +387,9 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                                 label="Street"
                                 // error={!!formik.errors.email}
                                 autoComplete="address-line1"
-                                value={values.client.street}
+                                value={values.street}
                                 // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('client.street')}
+                                onChangeText={handleChange('street')}
                             />
                             <TextInput
                                 activeOutlineColor={colors.orangeColor}
@@ -350,9 +397,9 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                                 label="House number"
                                 // error={!!formik.errors.email}
                                 autoComplete="address-line2"
-                                value={values.client.house_number}
+                                value={values.house_number}
                                 // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('client.house_number')}
+                                onChangeText={handleChange('house_number')}
                             />
                             <TextInput
                                 activeOutlineColor={colors.orangeColor}
@@ -360,45 +407,45 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                                 label="Apartment number"
                                 // error={!!formik.errors.email}
                                 autoComplete="address-line2"
-                                value={values.client.apartment_number}
+                                value={values.apartment_number}
                                 // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('client.apartment_number')}
+                                onChangeText={handleChange('apartment_number')}
                             />
                             <TextInput
                                 activeOutlineColor={colors.orangeColor}
                                 mode="outlined"
                                 label="City"
                                 // error={!!formik.errors.email}
-                                value={values.client.city}
+                                value={values.city}
                                 // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('client.city')}
+                                onChangeText={handleChange('city')}
                             />
                             <TextInput
                                 activeOutlineColor={colors.orangeColor}
                                 mode="outlined"
                                 label="Country"
                                 // error={!!formik.errors.email}
-                                value={values.client.country}
+                                value={values.country}
                                 // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('client.country')}
+                                onChangeText={handleChange('country')}
                             />
                             <TextInput
                                 activeOutlineColor={colors.orangeColor}
                                 mode="outlined"
                                 label="Post code"
                                 // error={!!formik.errors.email}
-                                value={values.client.post_code}
+                                value={values.post_code}
                                 // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('client.post_code')}
+                                onChangeText={handleChange('post_code')}
                             />
                             <TextInput
                                 activeOutlineColor={colors.orangeColor}
                                 mode="outlined"
                                 label="Passport"
                                 // error={!!formik.errors.email}
-                                value={values.client.passport}
+                                value={values.passport}
                                 // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('client.passport')}
+                                onChangeText={handleChange('passport')}
                             />
                         </View>
                     </Collapsible>

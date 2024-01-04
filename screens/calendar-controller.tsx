@@ -28,6 +28,7 @@ export default function CalendarController({ route: { params } }: any) {
                             onSubmit={(data) => {
                                 mutate({ mode: params.mode === 'create' ? EQueries.createEvent : EQueries.updateEvent, data });
                             }}
+                            deleteEvent={() => mutate({ mode: EQueries.deleteEvent, data: undefined })}
                         />
                     ) : (
                         <RoomForm
@@ -37,6 +38,7 @@ export default function CalendarController({ route: { params } }: any) {
                             onSubmit={(data) => {
                                 mutate({ mode: params.mode === 'create' ? EQueries.createRoom : EQueries.updateRoom, data });
                             }}
+                            deleteRoom={() => mutate({ mode: EQueries.deleteRoom, data: undefined })}
                         />
                     )
                 )}

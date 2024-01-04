@@ -1,6 +1,10 @@
 export interface IUserEntity {
     id: string;
     name: string;
+    surname: string;
+    phone: string;
+    city: string;
+    address: string;
     email: string;
     password: string;
     remember_token: string;
@@ -13,6 +17,10 @@ export interface IUserEntity {
 export interface ICompanyEntity {
     id: string;
     name: string;
+    city: string;
+    post_code: string;
+    address: string;
+    web_site: string;
     created_at: string
     updated_at: string
 }
@@ -22,6 +30,8 @@ export enum EUserRole {
     employee = "employee",
 }
 
+export type TUserUpdatePayload = Pick<IUserEntity, 'name'>
+export type TCompanyUpdatePayload = Pick<ICompanyEntity, 'name'>
 export type TCreateCompanyPayload = Omit<ICompanyEntity, "id" | "created_at" | "updated_at">
-export type TLoginPayload = Omit<IUserEntity, "id" | "name" | "company" | "remember_token" | "created_at" | "updated_at">
-export type TRegisterPayload = Omit<IUserEntity, "id" | "company" | "remember_token" | "created_at" | "updated_at" | "role">
+export type TLoginPayload = Pick<IUserEntity, "email" | "password">
+export type TRegisterPayload = Pick<IUserEntity, 'name' | 'email' | 'password'>

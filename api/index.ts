@@ -2,10 +2,18 @@ import axios from "axios"
 
 import { TCreateRoomPayload } from "../types/room.entity";
 import { TCreateEventPayload } from "../types/event.entity";
-import { TLoginPayload, TRegisterPayload, TCreateCompanyPayload } from "../types/user.entity";
+import { TLoginPayload, TRegisterPayload, TCreateCompanyPayload, TUserUpdatePayload, TCompanyUpdatePayload } from "../types/user.entity";
 
 export const getUser = async () => {
     return (await axios.get('/auth/get')).data;
+}
+
+export const updateUser = async (data: TUserUpdatePayload) => {
+    return (await axios.put('/user/update', JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })).data;
+}
+
+export const updateCompany = async (data: TCompanyUpdatePayload) => {
+    return (await axios.put('/company/update', JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })).data;
 }
 
 export const loginUser = async (data: TLoginPayload) => {
@@ -42,6 +50,7 @@ export const createRoom = async (data: TCreateRoomPayload) => {
 }
 
 export const createEvent = async (data: TCreateEventPayload) => {
+    console.log("🚀 ~ file: index.ts:53 ~ createEvent ~ data:", data)
     return (await axios.post('/calendar/book-create', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
 
@@ -50,6 +59,7 @@ export const updateRoom = async (data: TCreateRoomPayload, roomId: number | stri
 }
 
 export const updateEvent = async (data: TCreateEventPayload, bookId: number | string) => {
+    console.log("🚀 ~ file: index.ts:62 ~ updateEvent ~ data:", data, bookId)
     return (await axios.put(`/calendar/book-update/${bookId}`, JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
 

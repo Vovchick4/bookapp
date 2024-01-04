@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { StatusBar, View } from "react-native";
+import { Alert, StatusBar, View } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import DropDown, { DropDownPropsInterface } from "react-native-paper-dropdown";
@@ -13,6 +13,7 @@ interface Props {
     roomId: number;
     roomData: IRoomEntity;
     onSubmit: (data: any) => void;
+    deleteRoom: () => void;
 }
 
 const dropStates = {
@@ -48,7 +49,7 @@ const initialValues = {
     with_color: false,
 }
 
-export default function RoomForm({ mode, roomId, roomData, onSubmit }: Props) {
+export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
     const [visible, setVisible] = useState(false);
@@ -88,7 +89,28 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit }: Props) {
             },
             title: mode === "update" ? "Редагувати помешкання" : "Створити помешкання",
             headerRight: () => (
-                <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
+                <View style={{ flexDirection: 'row' }}>
+                    <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
+                    {mode === 'update' && <IconButton
+                        icon="trash-can"
+                        iconColor={colors.surface}
+                        onPress={() => {
+                            Alert.alert(
+                                'Ви дійсно хочете видалити помешкання?',
+                                '',
+                                [
+                                    {
+                                        text: 'Ні', // Button text
+                                    },
+                                    {
+                                        text: 'Так', // Button text
+                                        onPress: deleteRoom
+                                    },
+                                ],
+                            )
+                        }}
+                    />}
+                </View>
             ),
             headerLeft: () => (
                 <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => {
@@ -187,7 +209,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit }: Props) {
                                 key={color}
                                 children={undefined}
                                 onPress={() => { setFieldValue('color', color); setVisible(false); }}
-                                style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: color, borderWidth: color === values.color ? 2 : 0, borderColor: 'red' }}
+                                style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: color, opacity: 0.2, borderWidth: color === values.color ? 2 : 0, borderColor: 'red' }}
                             />
                         ))}
                     </View>

@@ -14,7 +14,7 @@ export default function DrawerContent(props: any) {
             <ScrollView>
                 <View style={{ backgroundColor: colors.menuColor }}>
                     <SafeAreaView style={{ justifyContent: 'center', alignItems: 'center' }}>
-                        <Avatar.Text style={{ backgroundColor: colors.orangeColor }} size={80} label={user?.name || ""} />
+                        <Avatar.Text style={{ backgroundColor: colors.orangeColor }} size={80} label={user?.name || "avatar"} />
                         <Text style={{ color: colors.surface, marginTop: 20, paddingBottom: 20, fontFamily: 'sans-serif-condensed', fontSize: 17 }}>{`${user?.email}`}</Text>
                     </SafeAreaView>
                 </View>
@@ -42,7 +42,7 @@ export default function DrawerContent(props: any) {
                     style={{ backgroundColor: colors.surface, borderRadius: 15, width: '100%', marginLeft: 0 }}
                     icon="domain"
                     label={"Компанія: " + user?.company.name}
-                    onPress={signOut}
+                    onPress={() => props.navigation.navigate("Profile", { tabIndex: 1 })}
                 />
 
                 <Drawer.Item

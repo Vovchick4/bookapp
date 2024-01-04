@@ -1,16 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
-import { createCompany } from "../api";
-import { ICompanyEntity, TCreateCompanyPayload } from "../types/user.entity";
+import { updateCompany } from "../api";
+import { IUserEntity, TCompanyUpdatePayload } from "../types/user.entity";
 import { queryClient } from "../providers/with-react-query/with-react-query";
 
-export default function useCreateMutateCompany() {
-    return useMutation<ICompanyEntity, Error, TCreateCompanyPayload>(
+export default function useCompanyUpdateMutate() {
+    return useMutation<IUserEntity, Error, TCompanyUpdatePayload>(
         {
-            mutationKey: ["createCompany"],
+            mutationKey: ["update-company"],
             mutationFn: async (data) => {
                 try {
-                    const res = (await createCompany(data));
-                    // Refetch the useGetQueryUser query after the mutation is successful
+                    const res = (await updateCompany(data));
                     await queryClient.refetchQueries({ queryKey: ['get-user'] });
                     return res.data
                 } catch (error) {

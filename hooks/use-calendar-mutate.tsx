@@ -19,9 +19,9 @@ const queries = {
     [EQueries.createRoom]: async (data: TCreateRoomPayload) => await createRoom(data),
     [EQueries.createEvent]: async (data: TCreateEventPayload) => await createEvent(data),
     [EQueries.updateRoom]: async ({ id, ...data }: { data: TCreateRoomPayload, id: number | string }) => await updateRoom(data, id),
-    [EQueries.updateEvent]: async ({ id, ...data }: { data: TCreateEventPayload, id: number | string }) => await updateEvent(data.data, id),
-    [EQueries.deleteRoom]: async (id: number | string) => await deleteRoom(id),
-    [EQueries.deleteEvent]: async (id: number | string) => await deleteEvent(id),
+    [EQueries.updateEvent]: async ({ id, ...data }: { data: TCreateEventPayload, id: number | string }) => await updateEvent(data, id),
+    [EQueries.deleteRoom]: async ({ id }: { id: number | string }) => await deleteRoom(id),
+    [EQueries.deleteEvent]: async ({ id }: { id: number | string }) => await deleteEvent(id),
 }
 
 export default function useCalendarMutate({ id }: { id: number }) {
@@ -32,7 +32,7 @@ export default function useCalendarMutate({ id }: { id: number }) {
             mutationKey: ["calendar-mutates"],
             mutationFn: async ({ mode, data }) => {
                 try {
-                    console.log({ ...data, id: id === -1 ? undefined : id });
+                    //console.log({ ...data, id: id === -1 ? undefined : id });
                     const res = await queries[mode]({ ...data, id: id === -1 ? undefined : id });
                     await queryClient.refetchQueries({ queryKey: ['get-rooms'] });
                     navigation.goBack();

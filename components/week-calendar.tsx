@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format, utcToZonedTime } from "date-fns-tz";
 import { NativeSyntheticEvent, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { addDays, addMonths, differenceInCalendarDays, eachDayOfInterval, eachWeekOfInterval, endOfMonth, getDate, isSameDay, startOfMonth, startOfWeek, subDays } from "date-fns";
 
-import { useCalendar } from "../contexts/calendar";
+import { TSatusColors, useCalendar } from "../contexts/calendar";
 import { IRoomEntity } from "../types/room.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import { ActivityIndicator } from "react-native-paper";
+import { EventStatus } from "../types/event.entity";
 
 type Props = {
     date: Date;
@@ -21,6 +22,13 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
     const [pos, setPos] = useState(0);
     const scrollViewRef = useRef<ScrollView | null>(null);
+    const statusesColors = useMemo<TSatusColors>(() => ({
+        [EventStatus.pending]: colors.statusPending,
+        [EventStatus.fullpaid]: colors.statusPaid,
+        [EventStatus.deposit]: colors.statusDeposit,
+        [EventStatus.nopaid]: colors.statusNoPaid,
+        [EventStatus.canceled]: colors.statusCanceled,
+    }), [])
 
     useEffect(() => {
         if (date) {
@@ -123,7 +131,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
                                                 width: '100%',
                                                 opacity: 1,
                                                 borderRightWidth: 1,
-                                                borderRightColor: colors.menuColor,
+                                                borderRightColor: statusesColors[event.status],
                                                 backgroundColor: colors.menuColor
                                                 // transform: [{ skewX: '30deg' }, { skewY: '30deg' }]
                                             }}
@@ -141,7 +149,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
     const RenderWeekView = () => {
         return <View style={[styles.main, { flexDirection: 'row' }]}>
             <View>
-                <View style={{ paddingBottom: 35, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
+                <View style={{ paddingBottom: 38, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
                     {isLoadingRooms && (
                         <View style={{ width: 100, marginTop: 15 }}>
                             <ActivityIndicator animating />
@@ -159,7 +167,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
                         {rooms && rooms.length > 0 && rooms.map((room, index) => (
                             <TouchableOpacity
                                 key={index}
-                                style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}
+                                style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', backgroundColor: room.with_color ? `rgba(${parseInt(room.color.slice(1, 3), 16)}, ${parseInt(room.color.slice(3, 5), 16)}, ${parseInt(room.color.slice(5, 7), 16)}, 0.5)` : 'transparent', borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}
                                 onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
                                 <Text>{room.name}</Text>
                             </TouchableOpacity>

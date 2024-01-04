@@ -1,8 +1,10 @@
 import { format } from "date-fns-tz";
-import { useContext, useState, useEffect, createContext, useRef } from "react";
+import { useContext, useState, useEffect, createContext, useRef, useMemo } from "react";
+import { EventStatus } from "../types/event.entity";
+import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 interface CalendarProviderProps {
-    children: JSX.Element,
+    children: JSX.Element
 }
 
 interface CalendarContextData {
@@ -13,6 +15,14 @@ interface CalendarContextData {
     onChangeInterval: (date: Date[], pos: number) => void,
 }
 
+export type TSatusColors = {
+    [key: string]: string
+    pending: string
+    fullpaid: string
+    deposit: string
+    nopaid: string
+    canceled: string
+}
 
 const CalendarContext = createContext<CalendarContextData>({} as CalendarContextData);
 
@@ -21,6 +31,7 @@ export function useCalendar() {
 }
 
 export function CalendarProvider({ children }: CalendarProviderProps) {
+    const { colors } = useAppTheme();
     const saveHeaderButtonRef = useRef(null);
     const [currentInterval, setCurrentInterval] = useState('')
     const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false)
