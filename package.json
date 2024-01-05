@@ -24,7 +24,7 @@
     "date-fns-tz": "^2.0.0",
     "expo": "~49.0.15",
     "expo-secure-store": "^12.5.0",
-    "expo-status-bar": "~1.6.0",
+    "expo-status-bar": "~1.10.0",
     "formik": "^2.4.5",
     "moment": "^2.29.4",
     "react": "18.2.0",
