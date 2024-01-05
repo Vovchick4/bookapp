@@ -1,13 +1,19 @@
+import * as Yup from "yup";
 import { useFormik } from "formik";
+import { Feather } from '@expo/vector-icons';
 import { View, ScrollView } from "react-native";
-import { Button, Text, TextInput } from "react-native-paper";
+import { Button, HelperText, Text, TextInput } from "react-native-paper";
 
 import { useAuth } from "../contexts/auth";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import useUserUpdateMutate from "../hooks/use-user-update-mutate";
 import isEqual from "../utils/is-equal";
-import { ICompanyEntity, IUserEntity } from "../types/user.entity";
+import { IUserEntity } from "../types/user.entity";
 import pickFields from "../utils/object-transform";
+
+const validationSchema = Yup.object({
+    name: Yup.string().trim().required("Поле ім'я є обовязковим")
+})
 
 export default function PofileRoute() {
     const { user } = useAuth();
@@ -21,6 +27,7 @@ export default function PofileRoute() {
             city: user?.city || "",
             address: user?.address || "",
         },
+        validationSchema,
         onSubmit: (data) => mutate(data)
     })
 
@@ -28,43 +35,57 @@ export default function PofileRoute() {
         <View style={{ flex: 1, justifyContent: 'space-between' }}>
             <ScrollView style={{ padding: 20 }}>
                 <TextInput
+                    left={<Feather name='user' size={38} color={colors.onSurface} />}
                     activeOutlineColor={colors.orangeColor}
                     mode="outlined"
                     label="Ім'я"
+                    error={!!formik.errors.name}
                     autoComplete="name"
                     value={formik.values.name}
+                    onBlur={formik.handleBlur('name')}
                     onChangeText={formik.handleChange('name')}
                 />
+                <HelperText type="error" visible={!!formik.errors.name}>
+                    {formik.errors.name}
+                </HelperText>
                 <TextInput
+                    left={<Feather icon="supervised-user-circle" />}
                     activeOutlineColor={colors.orangeColor}
                     mode="outlined"
                     label="Прізвище"
                     autoComplete="name-family"
                     value={formik.values.surname}
+                    onBlur={formik.handleBlur('surname')}
                     onChangeText={formik.handleChange('surname')}
                 />
                 <TextInput
+                    left={<Feather icon="local-phone" />}
                     activeOutlineColor={colors.orangeColor}
                     mode="outlined"
                     label="Номер телефону"
                     autoComplete="tel"
                     value={formik.values.phone}
+                    onBlur={formik.handleBlur('phone')}
                     onChangeText={formik.handleChange('phone')}
                 />
                 <TextInput
+                    left={<Feather icon="location-city" />}
                     activeOutlineColor={colors.orangeColor}
                     mode="outlined"
                     label="Місто"
-                    autoComplete="country"
+                    autoComplete="postal-address-region"
                     value={formik.values.city}
+                    onBlur={formik.handleBlur('city')}
                     onChangeText={formik.handleChange('city')}
                 />
                 <TextInput
+                    left={<Feather icon="address" />}
                     activeOutlineColor={colors.orangeColor}
                     mode="outlined"
                     label="Адресса"
                     autoComplete="address-line1"
                     value={formik.values.address}
+                    onBlur={formik.handleBlur('address')}
                     onChangeText={formik.handleChange('address')}
                 />
 

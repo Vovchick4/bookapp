@@ -61,7 +61,7 @@ const initialValues: Values = {
     end_date: undefined,
     parents: 0,
     childrens: 0,
-    status: EventStatus.pending,
+    status: EventStatus.nopaid,
     name: '',
     phone: '',
     email: '',
@@ -90,18 +90,13 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
     const isFocused = useIsFocused();
     const [expanded, setExpanded] = useState(true);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
-    const { values, setValues, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
+    const { values, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
         initialValues,
         onSubmit
     });
     const { data: roomsNames, isLoading: isLoadingRoomsNames } = useGetQueryRoomsNames({ mode: mode || '' });
 
     const eventStatuses = useMemo(() => ([
-        {
-            label: 'В очікувані',
-            color: colors.statusPending,
-            value: EventStatus.pending,
-        },
         {
             label: 'Повна оплата',
             color: colors.statusPaid,
@@ -125,7 +120,6 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
     ]), [])
 
     const statusesColors = useMemo(() => ({
-        [EventStatus.pending]: colors.statusPending,
         [EventStatus.fullpaid]: colors.statusPaid,
         [EventStatus.deposit]: colors.statusDeposit,
         [EventStatus.nopaid]: colors.statusNoPaid,

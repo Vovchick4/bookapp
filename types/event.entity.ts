@@ -1,3 +1,5 @@
+import { IRoomEntity } from "./room.entity"
+
 export interface IEventEntity {
     [key: string]: any
     id: number | string
@@ -22,15 +24,15 @@ export interface IEventEntity {
     final_price: number
     down_payment: number
     payment_on_place: number
-    notes: string
+    notes: string,
+    rooms: IRoomEntity
 }
 
 export enum EventStatus {
-    pending = "pending",
     fullpaid = "fullpaid",
     deposit = "deposit",
     nopaid = "nopaid",
     canceled = "canceled"
 }
 
-export type TCreateEventPayload = Omit<IEventEntity, "id">
+export type TCreateEventPayload = Omit<IEventEntity, "id" | "rooms">

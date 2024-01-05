@@ -50,8 +50,6 @@ export default function CreateCompany() {
                     <Button loading={isPending} disabled={isPending} style={styles.marginTop} buttonColor={colors.orangeColor} mode="contained" onPress={formik.handleSubmit}>
                         Створити компанію
                     </Button>
-
-
                 </View>
             </ScrollView>
 

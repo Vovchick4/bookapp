@@ -32,6 +32,6 @@ export enum EUserRole {
 
 export type TUserUpdatePayload = Pick<IUserEntity, 'name'>
 export type TCompanyUpdatePayload = Pick<ICompanyEntity, 'name'>
-export type TCreateCompanyPayload = Omit<ICompanyEntity, "id" | "created_at" | "updated_at">
+export type TCreateCompanyPayload = Pick<ICompanyEntity, 'name'>
 export type TLoginPayload = Pick<IUserEntity, "email" | "password">
 export type TRegisterPayload = Pick<IUserEntity, 'name' | 'email' | 'password'>

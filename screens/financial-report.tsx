@@ -1,26 +1,27 @@
 import { useState } from "react";
-import { Dimensions, } from "react-native";
-import { Icon, Text } from "react-native-paper";
-import { SceneMap, TabBar, TabView } from "react-native-tab-view";
+import { Icon } from "react-native-paper";
+import { Dimensions, Text } from "react-native";
+import { TabBar, TabView, SceneMap } from "react-native-tab-view";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
-import ProfileRoute from "../components/profile-route";
-import CopmanyRoute from "../components/company-route";
+import FinanceRoute from "../components/finance-route";
+import DetailRoute from "../components/detail-route";
+import { FinancesProvider } from "../contexts/finances-report";
 
 const renderScene = SceneMap({
-    user: ProfileRoute,
-    company: CopmanyRoute,
+    finance: FinanceRoute,
+    detail: DetailRoute,
 });
 
 const routes = [
     {
-        key: "user",
-        title: "Користувач",
-        icon: "face-man-profile"
+        key: "finance",
+        title: "Фінанси",
+        icon: "finance"
     },
     {
-        key: "company",
-        title: "Компанія",
-        icon: "domain"
+        key: "detail",
+        title: "Деталі",
+        icon: "details"
     },
 ]
 
@@ -42,17 +43,19 @@ const renderTabBar = (props: any, colors: any) => (
 
 const initialLayout = { width: Dimensions.get('window').width };
 
-export default function Profile({ route: { params } }: any) {
+export default function FinancialReport() {
     const { colors } = useAppTheme();
-    const [index, setIndex] = useState(params?.tabIndex || 0);
+    const [index, setIndex] = useState(0);
 
     return (
-        <TabView
-            navigationState={{ index, routes }}
-            renderScene={renderScene}
-            onIndexChange={setIndex}
-            initialLayout={initialLayout}
-            renderTabBar={(props) => renderTabBar(props, colors)}
-        />
+        <FinancesProvider>
+            <TabView
+                navigationState={{ index, routes }}
+                renderScene={renderScene}
+                onIndexChange={setIndex}
+                initialLayout={initialLayout}
+                renderTabBar={(props) => renderTabBar(props, colors)}
+            />
+        </FinancesProvider>
     )
 }

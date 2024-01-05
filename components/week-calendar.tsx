@@ -23,7 +23,6 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
     const [pos, setPos] = useState(0);
     const scrollViewRef = useRef<ScrollView | null>(null);
     const statusesColors = useMemo<TSatusColors>(() => ({
-        [EventStatus.pending]: colors.statusPending,
         [EventStatus.fullpaid]: colors.statusPaid,
         [EventStatus.deposit]: colors.statusDeposit,
         [EventStatus.nopaid]: colors.statusNoPaid,
@@ -207,7 +206,7 @@ const getEventsForRoomAndDay = (room: IRoomEntity, startDate: Date, endDate: Dat
 
     const eventsForRoomAndDay = room.bookings.filter((booking) =>
         startDate <= new Date(booking.end_date) &&
-        endDate >= new Date(booking.start_date)
+        endDate > new Date(booking.start_date)
     );
 
     return eventsForRoomAndDay;

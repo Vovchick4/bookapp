@@ -1,11 +1,16 @@
 import axios from "axios"
 
+import { TDateString } from "../contexts/finances-report";
 import { TCreateRoomPayload } from "../types/room.entity";
 import { TCreateEventPayload } from "../types/event.entity";
 import { TLoginPayload, TRegisterPayload, TCreateCompanyPayload, TUserUpdatePayload, TCompanyUpdatePayload } from "../types/user.entity";
 
 export const getUser = async () => {
     return (await axios.get('/auth/get')).data;
+}
+
+export const getUserFinancesReport = async (dates: TDateString) => {
+    return (await axios.get('/user/get-report', { params: dates })).data;
 }
 
 export const updateUser = async (data: TUserUpdatePayload) => {

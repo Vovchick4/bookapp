@@ -34,6 +34,14 @@ export default function DrawerContent(props: any) {
                     label="Profile"
                     onPress={() => props.navigation.navigate("Profile")}
                 />
+
+                <Drawer.Item
+                    rippleColor={colors.grayColor}
+                    style={{ backgroundColor: colors.surface, borderRadius: 15, width: '100%', marginLeft: 0 }}
+                    icon="finance"
+                    label="Finances"
+                    onPress={() => props.navigation.navigate("Finances")}
+                />
             </ScrollView>
 
             <View style={{ borderTopColor: colors.grayColor, borderTopWidth: 1 }}>

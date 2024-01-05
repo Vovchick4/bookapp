@@ -9,7 +9,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/auth";
 import { useCalendar } from "../contexts/calendar";
 import { DrawerContent, StatusBar } from "../components";
-import { CompanyScreen, ProfileScreen } from "../screens";
+import { CompanyScreen, ProfileScreen, FinancesScreen } from "../screens";
 import CalendarController from "../screens/calendar-controller";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
@@ -67,6 +67,10 @@ export default function DefaultLayout() {
                     <Drawer.Screen
                         name="Profile"
                         component={ProfileScreen}
+                    />
+                    <Drawer.Screen
+                        name="Finances"
+                        component={FinancesScreen}
                     />
                     <Drawer.Screen
                         name="CalendarController"

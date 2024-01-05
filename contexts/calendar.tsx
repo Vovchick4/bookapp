@@ -1,7 +1,6 @@
 import { format } from "date-fns-tz";
-import { useContext, useState, useEffect, createContext, useRef, useMemo } from "react";
-import { EventStatus } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import { useContext, useState, createContext, useRef } from "react";
 
 interface CalendarProviderProps {
     children: JSX.Element
@@ -17,7 +16,6 @@ interface CalendarContextData {
 
 export type TSatusColors = {
     [key: string]: string
-    pending: string
     fullpaid: string
     deposit: string
     nopaid: string
