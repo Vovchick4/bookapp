@@ -1,4 +1,5 @@
 export interface IUserEntity {
+    [key: string]: any;
     id: string;
     name: string;
     surname: string;
@@ -10,6 +11,7 @@ export interface IUserEntity {
     remember_token: string;
     company: ICompanyEntity
     role: EUserRole
+    notes: string
     created_at: string
     updated_at: string
 }
@@ -35,3 +37,5 @@ export type TCompanyUpdatePayload = Pick<ICompanyEntity, 'name'>
 export type TCreateCompanyPayload = Pick<ICompanyEntity, 'name'>
 export type TLoginPayload = Pick<IUserEntity, "email" | "password">
 export type TRegisterPayload = Pick<IUserEntity, 'name' | 'email' | 'password'>
+export type TEmployeeCreatePayload = Pick<IUserEntity, 'name' | 'surname' | 'email' | 'phone' | 'role' | 'notes'>
+

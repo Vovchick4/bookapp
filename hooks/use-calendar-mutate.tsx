@@ -1,10 +1,11 @@
+import Toast from "react-native-toast-message";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigation } from "@react-navigation/native";
 
 import { TCreateEventPayload } from "../types/event.entity";
 import { IRoomEntity, TCreateRoomPayload } from "../types/room.entity";
 import { queryClient } from "../providers/with-react-query/with-react-query";
 import { createEvent, createRoom, deleteEvent, deleteRoom, updateEvent, updateRoom } from "../api";
-import { useNavigation } from "@react-navigation/native";
 
 export enum EQueries {
     createRoom = "createRoom",
@@ -36,10 +37,24 @@ export default function useCalendarMutate({ id }: { id: number }) {
                     const res = await queries[mode]({ ...data, id: id === -1 ? undefined : id });
                     await queryClient.refetchQueries({ queryKey: ['get-rooms'] });
                     navigation.goBack();
-                    return res.data;
+                    return res?.message || 'Success';
                 } catch (error) {
                     throw (error as any).response?.data || { message: 'An error occurred' };
                 }
+            },
+            onSuccess: (data) => {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Успішно!',
+                    text2: `${data}👋`
+                })
+            },
+            onError: (err) => {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Успішно!',
+                    text2: err.message
+                })
             }
         }
     );

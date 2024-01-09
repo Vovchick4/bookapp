@@ -1,7 +1,8 @@
-import { Suspense, lazy, Fragment } from "react";
-import { Text, View } from "react-native";
-import { ActivityIndicator, IconButton } from "react-native-paper";
+import { Suspense, lazy, Fragment, useEffect, useRef } from "react";
+import { Animated, Text, View } from "react-native";
 import Svg, { G, Path } from "react-native-svg";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ActivityIndicator, IconButton } from "react-native-paper";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -9,7 +10,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/auth";
 import { useCalendar } from "../contexts/calendar";
 import { DrawerContent, StatusBar } from "../components";
-import { CompanyScreen, ProfileScreen, FinancesScreen } from "../screens";
+import { CompanyScreen, ProfileScreen, FinancesScreen, EmployeeScreen } from "../screens";
 import CalendarController from "../screens/calendar-controller";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
@@ -20,9 +21,31 @@ const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
 export default function DefaultLayout() {
-    const { colors } = useAppTheme()
+    const { colors } = useAppTheme();
     const { user, signOut } = useAuth();
-    const { currentInterval, openModal } = useCalendar();
+    const { queryRoom: { refetch, isLoading, isRefetching }, currentInterval, openModal } = useCalendar();
+    const spinValue = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        if (isLoading || isRefetching) {
+            // Start the rotation animation
+            Animated.loop(
+                Animated.timing(spinValue, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                })
+            ).start();
+        } else {
+            // Stop the rotation animation
+            spinValue.setValue(0);
+        }
+    }, [isLoading, isRefetching, spinValue]);
+
+    const spin = spinValue.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg'],
+    });
 
     return (
         user?.company ? (
@@ -41,7 +64,12 @@ export default function DefaultLayout() {
                         name="Calendar"
                         options={{
                             headerRight: () => (
-                                <View style={{ marginRight: 10 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, columnGap: 10 }}>
+                                    <TouchableOpacity onPress={refetch} disabled={isLoading || isRefetching}>
+                                        <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                                            <MaterialCommunityIcons name="update" size={22} color={(isLoading || isRefetching) ? colors.grayColor : colors.surface} />
+                                        </Animated.View>
+                                    </TouchableOpacity>
                                     <TouchableOpacity onPress={openModal}>
                                         <View style={{ flexDirection: 'row', columnGap: 10, alignItems: 'center', justifyContent: "center", }}>
                                             <Text style={{ color: colors.surface, }}>{currentInterval}</Text>
@@ -71,6 +99,10 @@ export default function DefaultLayout() {
                     <Drawer.Screen
                         name="Finances"
                         component={FinancesScreen}
+                    />
+                    <Drawer.Screen
+                        name="Employees"
+                        component={EmployeeScreen}
                     />
                     <Drawer.Screen
                         name="CalendarController"

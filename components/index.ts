@@ -5,3 +5,4 @@ export { default as WeekCalendar } from "./week-calendar";
 export { default as EventForm } from "./event-form";
 export { default as RoomForm } from "./room-form";
 export { default as StatusBar } from "./status-bar";
+export { default as EmployeeForm } from "./employee-form";

@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { format, utcToZonedTime } from "date-fns-tz";
-import { NativeSyntheticEvent, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { addDays, addMonths, differenceInCalendarDays, eachDayOfInterval, eachWeekOfInterval, endOfMonth, getDate, isSameDay, startOfMonth, startOfWeek, subDays } from "date-fns";
+import { addDays, eachDayOfInterval, isEqual, isSameDay } from "date-fns";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NativeSyntheticEvent, Platform, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
-import { TSatusColors, useCalendar } from "../contexts/calendar";
 import { IRoomEntity } from "../types/room.entity";
-import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import { EventStatus, IEventEntity } from "../types/event.entity";
 import { ActivityIndicator } from "react-native-paper";
-import { EventStatus } from "../types/event.entity";
+import { TSatusColors, useCalendar } from "../contexts/calendar";
+import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 type Props = {
     date: Date;
@@ -15,6 +15,8 @@ type Props = {
     isLoadingRooms: boolean;
     rooms: IRoomEntity[] | undefined;
 };
+
+const kievTimeZone = 'Europe/Kiev';
 
 export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: Props) {
     const { colors } = useAppTheme();
@@ -94,9 +96,12 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
 
             return (
                 <View key={roomIndex}>
-                    <TouchableOpacity onPress={() => navigate("CalendarController", { mode: "create", is_room_vis: false, type: "event", room_id: room.id, roomName: room.name, start_date: new Date(week) })}>
+                    <TouchableNativeFeedback
+                        background={TouchableNativeFeedback.Ripple(colors.primary, false)}
+                        onPress={() => navigate("CalendarController", { mode: "create", is_room_vis: false, type: "event", room_id: room.id, roomName: room.name, start_date: new Date(week) })}
+                    >
                         <View style={[styles.roomRow, { width: 50 }]}>
-                            <View style={[styles.roomCell, { borderRightColor: colors.menuColor }]}>
+                            <View style={[styles.roomCell, { backgroundColor: defineBgColor(room), borderRightColor: colors.menuColor }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
                                     // const isFirst = eventIndex === 0;
                                     // const isLast = eventIndex === events.length - 1;
@@ -118,28 +123,33 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
                                     // }
 
                                     return (
-                                        <TouchableOpacity
+                                        <TouchableNativeFeedback
                                             key={eventIndex}
+                                            background={TouchableNativeFeedback.Ripple(colors.primary, false)}
                                             onPress={() => navigate("CalendarController", { bookId: event.id, room_id: room.id, roomName: room.name, mode: "update", is_room_vis: false, type: "event" })}
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                zIndex: 9999,
-                                                height: '100%',
-                                                width: '100%',
-                                                opacity: 1,
-                                                borderRightWidth: 1,
-                                                borderRightColor: statusesColors[event.status],
-                                                backgroundColor: colors.menuColor
-                                                // transform: [{ skewX: '30deg' }, { skewY: '30deg' }]
-                                            }}
-                                        />
+                                        >
+                                            <View
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    zIndex: 9999,
+                                                    height: '100%',
+                                                    width: '100%',
+                                                    opacity: 1,
+                                                    backgroundColor: colors.menuColor
+                                                    // borderRightWidth: 1,
+                                                    // borderRightColor: statusesColors[event.status],
+                                                }}
+                                            >
+                                                <Text numberOfLines={1} style={{ color: statusesColors[event.status] }}>{event.name}</Text>
+                                            </View>
+                                        </TouchableNativeFeedback>
                                     )
                                 })}
                             </View>
                         </View>
-                    </TouchableOpacity>
+                    </TouchableNativeFeedback>
                 </View>
             );
         });
@@ -166,7 +176,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
                         {rooms && rooms.length > 0 && rooms.map((room, index) => (
                             <TouchableOpacity
                                 key={index}
-                                style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', backgroundColor: room.with_color ? `rgba(${parseInt(room.color.slice(1, 3), 16)}, ${parseInt(room.color.slice(3, 5), 16)}, ${parseInt(room.color.slice(5, 7), 16)}, 0.5)` : 'transparent', borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}
+                                style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}
                                 onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
                                 <Text>{room.name}</Text>
                             </TouchableOpacity>
@@ -183,7 +193,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
             >
                 {displayedDates.map((week, index) => (
                     <View key={index}>
-                        <View style={[styles.row, { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor }]}>
+                        <View style={[styles.row, isSameDay(week, new Date()) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor, backgroundColor: colors.accent } : { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor }]}>
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                                 <Text style={{ textAlign: 'center' }}>{format(week, 'EEE', { timeZone: 'Europe/Kiev' })}</Text>
                                 <Text style={{ textAlign: 'center' }}>{week.getDate()}</Text>
@@ -213,7 +223,6 @@ const getEventsForRoomAndDay = (room: IRoomEntity, startDate: Date, endDate: Dat
 };
 
 const getDatesForMonth = (baseDate: Date, numberDays: number = 0): Date[] => {
-    const kievTimeZone = 'Europe/Kiev';
     const startDateKiev = utcToZonedTime(addDays(baseDate, numberDays), kievTimeZone);
     const endDateKiev = utcToZonedTime(addDays(startDateKiev, 6), kievTimeZone);
 
@@ -224,6 +233,8 @@ const getDatesForMonth = (baseDate: Date, numberDays: number = 0): Date[] => {
 
     return week;
 };
+
+const defineBgColor = (room: IRoomEntity) => room.with_color ? `rgba(${parseInt(room.color.slice(1, 3), 16)}, ${parseInt(room.color.slice(3, 5), 16)}, ${parseInt(room.color.slice(5, 7), 16)}, 0.5)` : 'transparent';
 
 const styles = StyleSheet.create({
     main: {

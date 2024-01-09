@@ -3,7 +3,7 @@ import axios from "axios"
 import { TDateString } from "../contexts/finances-report";
 import { TCreateRoomPayload } from "../types/room.entity";
 import { TCreateEventPayload } from "../types/event.entity";
-import { TLoginPayload, TRegisterPayload, TCreateCompanyPayload, TUserUpdatePayload, TCompanyUpdatePayload } from "../types/user.entity";
+import { TLoginPayload, TRegisterPayload, TCreateCompanyPayload, TUserUpdatePayload, TCompanyUpdatePayload, TEmployeeCreatePayload } from "../types/user.entity";
 
 export const getUser = async () => {
     return (await axios.get('/auth/get')).data;
@@ -55,7 +55,6 @@ export const createRoom = async (data: TCreateRoomPayload) => {
 }
 
 export const createEvent = async (data: TCreateEventPayload) => {
-    console.log("🚀 ~ file: index.ts:53 ~ createEvent ~ data:", data)
     return (await axios.post('/calendar/book-create', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
 
@@ -64,7 +63,6 @@ export const updateRoom = async (data: TCreateRoomPayload, roomId: number | stri
 }
 
 export const updateEvent = async (data: TCreateEventPayload, bookId: number | string) => {
-    console.log("🚀 ~ file: index.ts:62 ~ updateEvent ~ data:", data, bookId)
     return (await axios.put(`/calendar/book-update/${bookId}`, JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
 
@@ -74,4 +72,25 @@ export const deleteRoom = async (roomId: number | string) => {
 
 export const deleteEvent = async (bookId: number | string) => {
     return (await axios.delete(`/calendar/book-delete/${bookId}`, { headers: { 'Content-Type': 'application/json', } })).data;
+}
+
+// Employee
+export const createEmployee = async (data: TEmployeeCreatePayload) => {
+    return (await axios.post('/employee/create', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
+}
+
+export const updateEmployee = async (data: TEmployeeCreatePayload, employeeId: number | string) => {
+    return (await axios.put(`/employee/update/${employeeId}`, JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
+}
+
+export const deleteEmployee = async (employeeId: number | string) => {
+    return (await axios.delete(`/employee/delete/${employeeId}`, { headers: { 'Content-Type': 'application/json', } })).data;
+}
+
+export const getEmployeeById = async (employeeId: number | string) => {
+    return (await axios.get(`/employee/get-employee/${employeeId}`)).data;
+}
+
+export const getEmployees = async () => {
+    return (await axios.get(`/employee/get-employees`)).data;
 }

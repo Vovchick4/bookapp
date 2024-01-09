@@ -72,14 +72,13 @@ const WeekCalendar = lazy(() => import('../components/week-calendar'))
 // };
 
 export default function Home({ navigation: { navigate } }: any) {
-    const { data, isLoading, isRefetching } = useGetQueryRooms();
     const { colors } = useAppTheme();
     const [date, setDate] = useState<Date>(new Date());
     const [markedDates, setMarkedDates] = useState({});
     const [isFabOpen, setIsFabOpen] = useState(false);
 
     const isFocused = useIsFocused();
-    const { isVisibleFullCalendar, openModal } = useCalendar();
+    const { queryRoom: { data, isLoading, isRefetching }, isVisibleFullCalendar } = useCalendar();
 
     const { height: screenHeight } = Dimensions.get('window');
     const halfScreenHeight = screenHeight / 2;

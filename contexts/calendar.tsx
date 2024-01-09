@@ -1,12 +1,15 @@
 import { format } from "date-fns-tz";
-import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import { useContext, useState, createContext, useRef } from "react";
+import useGetQueryRooms from "../hooks/use-get-query-rooms";
+import { IRoomEntity } from "../types/room.entity";
+import { UseQueryResult } from "@tanstack/react-query";
 
 interface CalendarProviderProps {
     children: JSX.Element
 }
 
 interface CalendarContextData {
+    queryRoom: UseQueryResult<IRoomEntity[], Error>
     saveHeaderButtonRef: React.MutableRefObject<null>,
     currentInterval: string,
     isVisibleFullCalendar: boolean,
@@ -29,7 +32,7 @@ export function useCalendar() {
 }
 
 export function CalendarProvider({ children }: CalendarProviderProps) {
-    const { colors } = useAppTheme();
+    const queryRooms = useGetQueryRooms();
     const saveHeaderButtonRef = useRef(null);
     const [currentInterval, setCurrentInterval] = useState('')
     const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false)
@@ -44,7 +47,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     }
 
     return (
-        <CalendarContext.Provider value={{ saveHeaderButtonRef, isVisibleFullCalendar, currentInterval, openModal, onChangeInterval }}>
+        <CalendarContext.Provider value={{ queryRoom: queryRooms, saveHeaderButtonRef, isVisibleFullCalendar, currentInterval, openModal, onChangeInterval }}>
             {children}
         </CalendarContext.Provider>
     )

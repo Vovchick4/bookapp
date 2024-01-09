@@ -62,6 +62,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
     useFocusEffect(
         useCallback(() => {
             resetForm({ values: initialValues });
+            StatusBar.setBackgroundColor(colors.menuColor);
         }, [])
     );
 
@@ -114,8 +115,6 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
             ),
             headerLeft: () => (
                 <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => {
-                    resetForm({ values: initialValues });
-                    StatusBar.setBackgroundColor(colors.menuColor);
                     navigation.goBack()
                 }} />
             ),

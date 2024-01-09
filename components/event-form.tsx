@@ -87,7 +87,6 @@ const targetTimeZone = 'Europe/Kiev';
 export default function EventForm({ mode, start_date, room_id, is_room_vis, eventData, onSubmit, deleteEvent }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
-    const isFocused = useIsFocused();
     const [expanded, setExpanded] = useState(true);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
     const { values, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
@@ -129,6 +128,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
     useFocusEffect(
         useCallback(() => {
             resetForm({ values: initialValues });
+            // StatusBar.setBackgroundColor(colors.menuColor);
         }, [])
     );
 
@@ -174,9 +174,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
     );
 
     useEffect(() => {
-        if (isFocused) {
-            StatusBar.setBackgroundColor(statusesColors[values.status]);
-        }
+        // StatusBar.setBackgroundColor(statusesColors[values.status]);
         navigation.setOptions({
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
@@ -208,16 +206,11 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
             ),
             headerLeft: () => (
                 <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => {
-                    resetForm();
-                    setFieldValue('start_date', '');
-                    setFieldValue('parents', 0);
-                    setFieldValue('childrens', 0);
-                    StatusBar.setBackgroundColor(colors.menuColor);
                     navigation.goBack();
                 }} />
             ),
         });
-    }, [isFocused, values.name, values.status])
+    }, [values.name, values.status])
 
     // Inside your component
 

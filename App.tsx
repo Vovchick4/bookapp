@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { Splash } from './components';
@@ -37,6 +38,7 @@ function App() {
       <CalendarProvider>
         <AppContent user={user} />
       </CalendarProvider>
+      <Toast />
     </SafeAreaProvider>
   );
 }
