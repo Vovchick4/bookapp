@@ -38,7 +38,7 @@ function App() {
       <CalendarProvider>
         <AppContent user={user} />
       </CalendarProvider>
-      <Toast />
+      <Toast autoHide visibilityTime={4000} />
     </SafeAreaProvider>
   );
 }

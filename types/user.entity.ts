@@ -23,6 +23,7 @@ export interface ICompanyEntity {
     post_code: string;
     address: string;
     web_site: string;
+    currency: string;
     created_at: string
     updated_at: string
 }

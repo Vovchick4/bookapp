@@ -1,10 +1,10 @@
+import { useEffect, useRef, useState } from "react";
+import { Feather } from "@expo/vector-icons";
 import { format, utcToZonedTime } from "date-fns-tz";
-import { addDays, eachDayOfInterval, isEqual, isSameDay } from "date-fns";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { NativeSyntheticEvent, Platform, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
+import { addDays, eachDayOfInterval, isSameDay } from "date-fns";
+import { NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import { IRoomEntity } from "../types/room.entity";
-import { EventStatus, IEventEntity } from "../types/event.entity";
 import { ActivityIndicator } from "react-native-paper";
 import { TSatusColors, useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
@@ -14,22 +14,17 @@ type Props = {
     navigate: any;
     isLoadingRooms: boolean;
     rooms: IRoomEntity[] | undefined;
+    statusesColors: TSatusColors;
 };
 
 const kievTimeZone = 'Europe/Kiev';
 
-export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: Props) {
+export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, statusesColors }: Props) {
     const { colors } = useAppTheme();
     const { onChangeInterval } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
     const [pos, setPos] = useState(0);
     const scrollViewRef = useRef<ScrollView | null>(null);
-    const statusesColors = useMemo<TSatusColors>(() => ({
-        [EventStatus.fullpaid]: colors.statusPaid,
-        [EventStatus.deposit]: colors.statusDeposit,
-        [EventStatus.nopaid]: colors.statusNoPaid,
-        [EventStatus.canceled]: colors.statusCanceled,
-    }), [])
 
     useEffect(() => {
         if (date) {
@@ -156,7 +151,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
     };
 
     const RenderWeekView = () => {
-        return <View style={[styles.main, { flexDirection: 'row' }]}>
+        return <ScrollView ><View style={[styles.main, { flexDirection: 'row' }]}>
             <View>
                 <View style={{ paddingBottom: 38, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
                     {isLoadingRooms && (
@@ -176,9 +171,13 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
                         {rooms && rooms.length > 0 && rooms.map((room, index) => (
                             <TouchableOpacity
                                 key={index}
-                                style={{ flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}
+                                style={{ flex: 1, height: 50, paddingLeft: 10, alignItems: 'flex-start', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor }}
                                 onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
-                                <Text>{room.name}</Text>
+                                <Text style={{ fontSize: 12 }} numberOfLines={1}>
+                                    <Feather name="user" />
+                                    {room.count_room}
+                                </Text>
+                                <Text style={{ fontSize: 12 }} numberOfLines={1}>{room.name}</Text>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
@@ -193,7 +192,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
             >
                 {displayedDates.map((week, index) => (
                     <View key={index}>
-                        <View style={[styles.row, isSameDay(week, new Date()) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor, backgroundColor: colors.accent } : { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor }]}>
+                        <View style={[styles.row, isSameDay(week, new Date()) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor, backgroundColor: colors.orangeColor } : { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor }]}>
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                                 <Text style={{ textAlign: 'center' }}>{format(week, 'EEE', { timeZone: 'Europe/Kiev' })}</Text>
                                 <Text style={{ textAlign: 'center' }}>{week.getDate()}</Text>
@@ -204,6 +203,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms }: 
                 ))}
             </ScrollView>
         </View>
+        </ScrollView>
     };
 
     return RenderWeekView();

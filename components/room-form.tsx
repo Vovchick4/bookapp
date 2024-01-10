@@ -27,6 +27,15 @@ const dropStates = {
 const roomTypes: DropDownPropsInterface['list'] = [{
     label: 'Квартира',
     value: 'Квартира',
+}, {
+    label: 'Кімната',
+    value: 'Кімната',
+}, {
+    label: 'Будинок',
+    value: 'Будинок',
+}, {
+    label: 'Віла',
+    value: 'Віла',
 }]
 
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + "", value: index }));

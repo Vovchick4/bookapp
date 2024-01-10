@@ -1,9 +1,10 @@
-import { createElement } from "react";
+import { useState } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import { AntDesign, Entypo, MaterialIcons, Feather } from "@expo/vector-icons";
 import { ScrollView, View } from "react-native";
 import { Button, HelperText, Text, TextInput } from "react-native-paper";
+import { AntDesign, Entypo, MaterialIcons, Feather } from "@expo/vector-icons";
+import DropDown, { DropDownPropsInterface } from "react-native-paper-dropdown";
 
 import isEqual from "../utils/is-equal";
 import { useAuth } from "../contexts/auth";
@@ -16,6 +17,22 @@ const validationSchema = Yup.object({
     name: Yup.string().trim().required("Поле ім'я є обовязковим")
 })
 
+const dropStates = {
+    currency: "currency"
+}
+
+const roomTypes: DropDownPropsInterface['list'] = [{
+    label: 'Гривня UAH',
+    value: 'UAH',
+},
+{
+    label: 'Долар USD',
+    value: 'USD',
+}, {
+    label: 'Євро EUR',
+    value: 'EUR',
+}]
+
 export default function CopmanyRoute() {
     const { user } = useAuth();
     const { colors } = useAppTheme();
@@ -27,10 +44,12 @@ export default function CopmanyRoute() {
             post_code: user?.company.post_code || "",
             address: user?.company.address || "",
             web_site: user?.company.web_site || "",
+            currency: user?.company.currency || ""
         },
         validationSchema,
         onSubmit: (data) => mutate(data)
     })
+    const [dropsListState, setDropsListState] = useState<string | null>(null);
 
     return (
         <View style={{ flex: 1, justifyContent: 'space-between' }}>
@@ -126,6 +145,20 @@ export default function CopmanyRoute() {
                     onChangeText={formik.handleChange('web_site')}
                 />
 
+                <View style={{ position: 'relative', marginTop: 20 }}>
+                    <DropDown
+                        mode="outlined"
+                        label="Тип"
+                        list={roomTypes}
+                        value={formik.values.currency}
+                        activeColor={colors.orangeColor}
+                        setValue={(value) => formik.setFieldValue('currency', value)}
+                        visible={dropStates.currency === dropsListState}
+                        showDropDown={() => setDropsListState(dropStates.currency)}
+                        onDismiss={() => setDropsListState(null)}
+                    />
+                </View>
+
                 {/* <View style={{ marginTop: 20 }}>
                     <Text>Компанію створено:</Text>
                     <Text style={{ color: colors.grayColor }}>{user?.company.created_at}</Text>
@@ -135,7 +168,7 @@ export default function CopmanyRoute() {
             </ScrollView>
             <Button
                 loading={isPending}
-                disabled={isPending || isEqual<any, Pick<ICompanyEntity, 'name'>>(pickFields<any>(user?.company, ["name", "city", "post_code", "address", "web_site"]), formik.values)}
+                disabled={isPending || isEqual<any, Pick<ICompanyEntity, 'name'>>(pickFields<any>(user?.company, ["name", "city", "post_code", "address", "web_site", "currency"]), formik.values)}
                 style={[{ borderRadius: 15 }]}
                 mode="outlined"
                 buttonColor={colors.orangeColor}

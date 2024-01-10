@@ -3,7 +3,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
 import { View, ScrollView } from "react-native";
-import { Button, HelperText, Text, TextInput } from "react-native-paper";
+import { Button, HelperText, TextInput } from "react-native-paper";
 
 import { useAuth } from "../contexts/auth";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";

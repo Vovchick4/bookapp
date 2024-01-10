@@ -1,80 +1,106 @@
 import Collapsible from "react-native-collapsible";
 import { CalendarList } from "react-native-calendars";
 import { useIsFocused } from "@react-navigation/native";
-import { Suspense, lazy, useEffect, useState } from "react";
-import { ActivityIndicator, FAB, Portal, Text } from "react-native-paper";
+import { Suspense, lazy, useMemo, useState } from "react";
+import { ActivityIndicator, FAB, Portal } from "react-native-paper";
 import { StyleSheet, View, SafeAreaView, Dimensions, Alert } from "react-native";
 
-// import { WeekCalendar } from "../components";
-import { useCalendar } from "../contexts/calendar";
-import useGetQueryRooms from "../hooks/use-get-query-rooms";
+import { IRoomEntity } from "../types/room.entity";
+import { EventStatus } from "../types/event.entity";
+import { TSatusColors, useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+
+interface IMarkedDates {
+    [date: string]: {
+        periods?: {
+            startingDay?: boolean;
+            endingDay?: boolean;
+            color: string;
+            // Other properties you want to set for these periods
+            // For example:
+            // textColor?: string;
+        }[];
+        // Other properties for each date
+    };
+}
 
 const WeekCalendar = lazy(() => import('../components/week-calendar'))
 
-// const rooms = [
-//     {
-//         id: 1,
-//         name: "Room 1",
-//         bookings: [{
-//             eventName: 'Meeting 1',
-//             startDate: new Date('2023-12-20T09:00:00'),
-//             endDate: new Date('2023-12-21T11:00:00'),
-//             color: "red"
-//         },
-//         {
-//             eventName: 'Meeting 2',
-//             startDate: new Date('2023-12-23T09:00:00'),
-//             endDate: new Date('2023-12-27T09:00:00'),
-//             color: "black"
-//         }]
-//     },
-//     {
-//         id: 2,
-//         name: "Room 2",
-//         bookings: [{
-//             eventName: 'Meeting 1',
-//             startDate: new Date('2023-12-21T09:00:00'),
-//             endDate: new Date('2023-12-21T11:00:00'),
-//             color: 'blue'
-//         },
-//         {
-//             eventName: 'Meeting 1',
-//             startDate: new Date('2023-12-15T09:00:00'),
-//             endDate: new Date('2023-12-17T11:00:00'),
-//             color: 'blue'
-//         }]
-//     }
-// ]
+const calculateMarkedDates = (rooms: IRoomEntity[], statusesColors: TSatusColors): IMarkedDates => {
+    const markedDates: IMarkedDates = {};
+    rooms.forEach((room: IRoomEntity) => {
+        room.bookings.forEach((booking) => {
+            const startDate = new Date(booking.start_date);
+            const endDate = new Date(booking.end_date);
 
-// // Move the logic to calculate markedDates into a separate function
-// const calculateMarkedDates = (rooms: any) => {
-//     const markedDates: any = {};
-//     rooms.forEach((room: any) => {
-//         room.bookings.forEach((booking: any) => {
-//             let currentDate = new Date(booking.startDate);
-//             const endDate = new Date(booking.endDate);
+            const formattedStartDate = startDate.toISOString().split('T')[0];
+            const formattedEndDate = endDate.toISOString().split('T')[0];
 
-//             while (currentDate <= endDate) {
-//                 const formattedDate = currentDate.toISOString().split('T')[0];
-//                 markedDates[formattedDate] = {
-//                     marked: true,
-//                     dotColor: booking.color,
-//                     // Other properties you want to set for these dates
-//                     // For example:
-//                     // selected: true,
-//                 };
-//                 currentDate.setDate(currentDate.getDate() + 1);
-//             }
-//         });
-//     });
-//     return markedDates;
-// };
+            if (!markedDates[formattedStartDate]) {
+                markedDates[formattedStartDate] = {};
+            }
+
+            if (!markedDates[formattedStartDate].periods) {
+                markedDates[formattedStartDate].periods = [];
+            }
+
+            markedDates[formattedStartDate].periods?.push({
+                startingDay: true,
+                endingDay: true,
+                color: statusesColors[booking.status],
+                // Other properties you want to set for these periods
+                // For example:
+                // textColor: 'white',
+            });
+
+            if (formattedStartDate !== formattedEndDate) {
+                if (!markedDates[formattedEndDate]) {
+                    markedDates[formattedEndDate] = {};
+                }
+
+                if (!markedDates[formattedEndDate].periods) {
+                    markedDates[formattedEndDate].periods = [];
+                }
+
+                markedDates[formattedEndDate].periods?.push({
+                    endingDay: true,
+                    color: statusesColors[booking.status],
+                    // Other properties you want to set for these periods
+                    // For example:
+                    // textColor: 'white',
+                });
+
+                let currentDate = new Date(startDate);
+                currentDate.setDate(currentDate.getDate() + 1);
+
+                while (currentDate.toISOString().split('T')[0] !== formattedEndDate) {
+                    const formattedDate = currentDate.toISOString().split('T')[0];
+                    if (!markedDates[formattedDate]) {
+                        markedDates[formattedDate] = {};
+                    }
+
+                    if (!markedDates[formattedDate].periods) {
+                        markedDates[formattedDate].periods = [];
+                    }
+
+                    markedDates[formattedDate].periods?.push({
+                        color: statusesColors[booking.status],
+                        // Other properties you want to set for these periods
+                        // For example:
+                        // textColor: 'white',
+                    });
+
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+            }
+        });
+    });
+    return markedDates;
+};
 
 export default function Home({ navigation: { navigate } }: any) {
     const { colors } = useAppTheme();
     const [date, setDate] = useState<Date>(new Date());
-    const [markedDates, setMarkedDates] = useState({});
     const [isFabOpen, setIsFabOpen] = useState(false);
 
     const isFocused = useIsFocused();
@@ -82,6 +108,19 @@ export default function Home({ navigation: { navigate } }: any) {
 
     const { height: screenHeight } = Dimensions.get('window');
     const halfScreenHeight = screenHeight / 2;
+
+    const statusesColors = useMemo<TSatusColors>(() => ({
+        [EventStatus.fullpaid]: colors.statusPaid,
+        [EventStatus.deposit]: colors.statusDeposit,
+        [EventStatus.nopaid]: colors.statusNoPaid,
+        [EventStatus.canceled]: colors.statusCanceled,
+    }), [])
+
+    const markedDates = useMemo(() => {
+        if (data && data?.length > 0) {
+            return calculateMarkedDates(data, statusesColors);
+        }
+    }, [data])
 
     // useEffect(() => {
     //     // Calculate markedDates when the modal is opened
@@ -116,6 +155,7 @@ export default function Home({ navigation: { navigate } }: any) {
                                 selectedDayBackgroundColor: colors.menuColor,
                                 // Add more custom styles as needed
                             }}
+                            markingType="multi-period"
                             markedDates={markedDates}
                             // Handle onDayPress or other calendar callbacks as needed
                             onDayPress={(day) => setDate(new Date(day.dateString))}
@@ -125,7 +165,7 @@ export default function Home({ navigation: { navigate } }: any) {
             </Collapsible>
 
             <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
-                <WeekCalendar date={date} rooms={data} navigate={navigate} isLoadingRooms={(isLoading || isRefetching)} />
+                <WeekCalendar date={date} rooms={data} navigate={navigate} isLoadingRooms={(isLoading || isRefetching)} statusesColors={statusesColors} />
             </Suspense>
 
             {!isLoading && <Portal>

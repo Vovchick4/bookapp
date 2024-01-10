@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "../contexts/auth";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import { EUserRole } from "../types/user.entity";
 
 export default function DrawerContent(props: any) {
     const { colors } = useAppTheme();
@@ -43,13 +44,14 @@ export default function DrawerContent(props: any) {
                     onPress={() => props.navigation.navigate("Finances")}
                 />
 
-                <Drawer.Item
-                    rippleColor={colors.grayColor}
-                    style={{ backgroundColor: colors.surface, borderRadius: 15, width: '100%', marginLeft: 0 }}
-                    icon="account-multiple-outline"
-                    label="Employees"
-                    onPress={() => props.navigation.navigate("Employees")}
-                />
+                {user?.role === EUserRole.owner &&
+                    <Drawer.Item
+                        rippleColor={colors.grayColor}
+                        style={{ backgroundColor: colors.surface, borderRadius: 15, width: '100%', marginLeft: 0 }}
+                        icon="account-multiple-outline"
+                        label="Employees"
+                        onPress={() => props.navigation.navigate("Employees")}
+                    />}
             </ScrollView>
 
             <View style={{ borderTopColor: colors.grayColor, borderTopWidth: 1 }}>

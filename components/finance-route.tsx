@@ -1,10 +1,13 @@
 import { ScrollView, View } from 'react-native';
 import { Button, Divider, Text } from 'react-native-paper';
 import { DatePickerInput } from 'react-native-paper-dates';
+
+import { useAuth } from '../contexts/auth';
 import { useFinancesReport } from '../contexts/finances-report';
 import { useAppTheme } from '../providers/with-react-paper-ui/with-react-paper-ui';
 
 export default function FinanceRoute() {
+    const { user } = useAuth()
     const { colors } = useAppTheme();
     const { bookings, dateString, onChangeDate, fetchBookings, isPending, isStart } = useFinancesReport();
 
@@ -41,28 +44,28 @@ export default function FinanceRoute() {
                     <View style={{ flexDirection: "row", alignItems: "center", columnGap: 15 }}>
                         <View style={{ borderRadius: 50, width: 40, height: 40, backgroundColor: colors.statusDeposit }} />
                         <Text>Попередній внесок:</Text>
-                        <Text> {bookings.deposit} UAH</Text>
+                        <Text> {bookings.deposit} {user?.company.currency}</Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", columnGap: 15 }}>
                         <View style={{ borderRadius: 50, width: 40, height: 40, backgroundColor: colors.statusPaid }} />
                         <Text>Повністю оплачений:</Text>
-                        <Text>{bookings.fullpaid} UAH</Text>
+                        <Text>{bookings.fullpaid} {user?.company.currency}</Text>
                     </View>
-                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Отримані платежі: {bookings.deposit + bookings.fullpaid} UAH</Text>
+                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Отримані платежі: {bookings.deposit + bookings.fullpaid} {user?.company.currency}</Text>
 
                     <View style={{ flexDirection: "row", alignItems: "center", columnGap: 15 }}>
                         <View style={{ borderRadius: 50, width: 40, height: 40, backgroundColor: colors.statusNoPaid }} />
                         <Text>Відсутність оплати:</Text>
-                        <Text>{bookings.no_paid} UAH</Text>
+                        <Text>{bookings.no_paid} {user?.company.currency}</Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", columnGap: 15 }}>
                         <View style={{ borderRadius: 50, width: 40, height: 40, backgroundColor: colors.statusDeposit }} />
                         <Text>Оплата на місці:</Text>
-                        <Text>{bookings.payment_on_place} UAH</Text>
+                        <Text>{bookings.payment_on_place} {user?.company.currency}</Text>
                     </View>
-                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Очікувані виплати: {bookings.no_paid + bookings.payment_on_place} UAH</Text>
+                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Очікувані виплати: {bookings.no_paid + bookings.payment_on_place} {user?.company.currency}</Text>
                     <Divider bold style={{ height: 4 }} />
-                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Загальна кількість: {bookings.no_paid + bookings.payment_on_place + bookings.deposit + bookings.fullpaid} UAH</Text>
+                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Загальна кількість: {bookings.no_paid + bookings.payment_on_place + bookings.deposit + bookings.fullpaid} {user?.company.currency}</Text>
                 </View>
             ) : (
                 <Text>{isStart ? "В даному діапазону не знайдено бронювань" : ""}</Text>
