@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Feather } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import { format, utcToZonedTime } from "date-fns-tz";
-import { addDays, eachDayOfInterval, isSameDay } from "date-fns";
+import { addDays, differenceInDays, eachDayOfInterval, isSameDay } from "date-fns";
 import { NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
+import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
+import defineBgColor from "../utils/define-bg-color";
 import { ActivityIndicator } from "react-native-paper";
 import { TSatusColors, useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
@@ -15,11 +17,12 @@ type Props = {
     isLoadingRooms: boolean;
     rooms: IRoomEntity[] | undefined;
     statusesColors: TSatusColors;
+    onOpenFilter: () => void;
 };
 
 const kievTimeZone = 'Europe/Kiev';
 
-export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, statusesColors }: Props) {
+export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, statusesColors, onOpenFilter }: Props) {
     const { colors } = useAppTheme();
     const { onChangeInterval } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
@@ -96,27 +99,8 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                         onPress={() => navigate("CalendarController", { mode: "create", is_room_vis: false, type: "event", room_id: room.id, roomName: room.name, start_date: new Date(week) })}
                     >
                         <View style={[styles.roomRow, { width: 50 }]}>
-                            <View style={[styles.roomCell, { backgroundColor: defineBgColor(room), borderRightColor: colors.menuColor }]}>
+                            <View style={[styles.roomCell, { backgroundColor: defineBgColor(room), borderRightWidth: 1, borderRightColor: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? statusesColors[events[0].status] : colors.menuColor : colors.menuColor, }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
-                                    // const isFirst = eventIndex === 0;
-                                    // const isLast = eventIndex === events.length - 1;
-
-                                    // // Determine border styles for first and last elements
-                                    // const borderStyles: any = {};
-                                    // if (isFirst) {
-                                    //     borderStyles.borderLeftWidth = 1;
-                                    //     borderStyles.borderLeftColor = 'transparent'; // Hide the left border
-                                    //     borderStyles.borderRightWidth = 5; // Increase the right border width
-                                    //     borderStyles.borderRightColor = colors.menuColor;
-                                    //     borderStyles.
-                                    // }
-                                    // if (isLast) {
-                                    //     borderStyles.borderRightWidth = 1;
-                                    //     borderStyles.borderRightColor = 'transparent'; // Hide the right border
-                                    //     borderStyles.borderLeftWidth = 5; // Increase the left border width
-                                    //     borderStyles.borderLeftColor = colors.menuColor;
-                                    // }
-
                                     return (
                                         <TouchableNativeFeedback
                                             key={eventIndex}
@@ -125,19 +109,33 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                         >
                                             <View
                                                 style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    zIndex: 9999,
                                                     height: '100%',
                                                     width: '100%',
-                                                    opacity: 1,
-                                                    backgroundColor: colors.menuColor
-                                                    // borderRightWidth: 1,
+                                                    backgroundColor: hexToRgba(statusesColors[event.status], 0.5) || 'red',
+                                                    // borderRightWidth: 12,
                                                     // borderRightColor: statusesColors[event.status],
                                                 }}
                                             >
-                                                <Text numberOfLines={1} style={{ color: statusesColors[event.status] }}>{event.name}</Text>
+                                                {isSameDay(week, new Date(event.start_date)) && (
+                                                    <View
+                                                        style={{
+                                                            width: (differenceInDays(new Date(event.end_date), new Date(event.start_date)) + 1) * 50,
+                                                            zIndex: 9999,
+                                                            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            numberOfLines={1}
+                                                            style={{
+                                                                fontWeight: '800',
+                                                                // width: 100,
+                                                                position: 'absolute',
+                                                                zIndex: 9999,
+                                                            }}
+                                                        >booksa askd kas DSF SDF SDF SDF SDF SD F SD
+                                                        </Text>
+                                                    </View>
+                                                )}
                                             </View>
                                         </TouchableNativeFeedback>
                                     )
@@ -151,7 +149,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     };
 
     const RenderWeekView = () => {
-        return <ScrollView ><View style={[styles.main, { flexDirection: 'row' }]}>
+        return <ScrollView><View style={[styles.main, { flexDirection: 'row' }]}>
             <View>
                 <View style={{ paddingBottom: 38, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
                     {isLoadingRooms && (
@@ -165,6 +163,10 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                             Добавте помешкання
                         </Text>
                     </View>}
+
+                    {/* {!isLoadingRooms && rooms && rooms.length > 0 && (
+                        <AntDesign name="filter" size={22} onPress={onOpenFilter} />
+                    )} */}
                 </View>
                 {!isLoadingRooms && (
                     <ScrollView style={{ width: 100 }}>
@@ -206,7 +208,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
         </ScrollView>
     };
 
-    return RenderWeekView();
+    return <View style={styles.main}>{RenderWeekView()}</View>;
 }
 
 const getEventsForRoomAndDay = (room: IRoomEntity, startDate: Date, endDate: Date) => {
@@ -233,8 +235,6 @@ const getDatesForMonth = (baseDate: Date, numberDays: number = 0): Date[] => {
 
     return week;
 };
-
-const defineBgColor = (room: IRoomEntity) => room.with_color ? `rgba(${parseInt(room.color.slice(1, 3), 16)}, ${parseInt(room.color.slice(3, 5), 16)}, ${parseInt(room.color.slice(5, 7), 16)}, 0.5)` : 'transparent';
 
 const styles = StyleSheet.create({
     main: {
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     roomCell: {
         position: 'relative',
         height: 50,
-        borderRightWidth: 1,
+        // borderRightWidth: 1,
         flex: 1, // Adjust the flex value to fit the cells within the view
         alignItems: 'center',
         justifyContent: 'center',

@@ -127,21 +127,17 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
 
     useFocusEffect(
         useCallback(() => {
-            resetForm({ values: initialValues });
-            // StatusBar.setBackgroundColor(colors.menuColor);
-        }, [])
-    );
-
-    useFocusEffect(
-        useCallback(() => {
             if (room_id) {
                 setFieldValue('room_id', room_id);
             }
-        }, [room_id])
-    );
 
-    useFocusEffect(
-        useCallback(() => {
+            if (mode === 'create' && start_date !== undefined) {
+                const selectedDate = new Date(start_date);
+                selectedDate.setHours(0, 0, 0, 0);
+                const startDateInTargetZone = format(utcToZonedTime(selectedDate, targetTimeZone), 'yyyy-MM-dd');
+                setFieldValue('start_date', new Date(startDateInTargetZone));
+            }
+
             if (eventData && mode === 'update') {
                 // console.log("🚀 ~ file: event-form.tsx:132 ~ useCallback ~ eventData:", eventData)
                 Object.keys(eventData).forEach((event) => {
@@ -159,18 +155,11 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                     }
                 })
             }
-        }, [mode, eventData])
-    );
 
-    useFocusEffect(
-        useCallback(() => {
-            if (mode === 'create' && start_date !== undefined) {
-                const selectedDate = new Date(start_date);
-                selectedDate.setHours(0, 0, 0, 0);
-                const startDateInTargetZone = format(utcToZonedTime(selectedDate, targetTimeZone), 'yyyy-MM-dd');
-                setFieldValue('start_date', new Date(startDateInTargetZone));
+            return () => {
+                resetForm({ values: initialValues });
             }
-        }, [mode, start_date])
+        }, [mode, eventData, room_id, start_date])
     );
 
     useEffect(() => {
@@ -263,9 +252,6 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
         },
         [setFieldValue]
     );
-
-    console.log(values);
-    // console.log(values.start_date, values.end_date);
 
     return (
         <Fragment>

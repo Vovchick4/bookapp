@@ -7,6 +7,7 @@ import { Button, Checkbox, Icon, IconButton, Modal, Portal, Text, TextInput } fr
 
 import { IRoomEntity } from "../types/room.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import defineBgColor from "../utils/define-bg-color";
 
 interface Props {
     mode?: string;
@@ -70,16 +71,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
 
     useFocusEffect(
         useCallback(() => {
-            resetForm({ values: initialValues });
-            StatusBar.setBackgroundColor(colors.menuColor);
-        }, [])
-    );
-
-    useFocusEffect(
-        useCallback(() => {
             if (roomData && mode === 'update' && roomId !== -1) {
-                console.log(roomData);
-
                 Object.keys(roomData).forEach((room) => {
                     if (room !== 'id' && room !== 'company_id' && room !== 'created_at' && room !== 'updated_at') {
                         if (roomData[room]) {
@@ -88,14 +80,19 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                     }
                 })
             }
+
+            return () => {
+                resetForm({ values: initialValues });
+                StatusBar.setBackgroundColor(colors.menuColor);
+            }
         }, [mode, roomData, roomId])
     );
 
     useEffect(() => {
-        StatusBar.setBackgroundColor(values.with_color ? values.color : colors.menuColor);
+        StatusBar.setBackgroundColor(values.with_color ? defineBgColor(roomData) : colors.menuColor);
         navigation.setOptions({
             headerStyle: {
-                backgroundColor: values.with_color ? values.color : colors.menuColor,
+                backgroundColor: values.with_color ? defineBgColor(roomData) : colors.menuColor,
             },
             title: mode === "update" ? "Редагувати помешкання" : "Створити помешкання",
             headerRight: () => (
@@ -202,7 +199,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                     onPress={() => setFieldValue('with_color', !values.with_color)}
                 />
                 {values.with_color && <Button
-                    style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: values.color }}
+                    style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: values.color, opacity: 0.2, }}
                     children={undefined}
                     onPress={() => setVisible(true)}
                 />}

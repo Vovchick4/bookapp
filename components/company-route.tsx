@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { ScrollView, View } from "react-native";
-import { Button, HelperText, Text, TextInput } from "react-native-paper";
+import { Button, HelperText, TextInput } from "react-native-paper";
 import { AntDesign, Entypo, MaterialIcons, Feather } from "@expo/vector-icons";
 import DropDown, { DropDownPropsInterface } from "react-native-paper-dropdown";
 
@@ -158,13 +158,6 @@ export default function CopmanyRoute() {
                         onDismiss={() => setDropsListState(null)}
                     />
                 </View>
-
-                {/* <View style={{ marginTop: 20 }}>
-                    <Text>Компанію створено:</Text>
-                    <Text style={{ color: colors.grayColor }}>{user?.company.created_at}</Text>
-                    <Text>Компанію оновлено:</Text>
-                    <Text style={{ color: colors.grayColor }}>{user?.company.updated_at}</Text>
-                </View> */}
             </ScrollView>
             <Button
                 loading={isPending}

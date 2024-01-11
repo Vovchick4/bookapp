@@ -52,7 +52,7 @@ export default function useCalendarMutate({ id }: { id: number }) {
             onError: (err) => {
                 Toast.show({
                     type: 'error',
-                    text1: 'Успішно!',
+                    text1: 'Помилка!',
                     text2: err.message
                 })
             }

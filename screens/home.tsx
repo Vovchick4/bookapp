@@ -2,7 +2,7 @@ import Collapsible from "react-native-collapsible";
 import { CalendarList } from "react-native-calendars";
 import { useIsFocused } from "@react-navigation/native";
 import { Suspense, lazy, useMemo, useState } from "react";
-import { ActivityIndicator, FAB, Portal } from "react-native-paper";
+import { ActivityIndicator, FAB, Modal, Portal, Text } from "react-native-paper";
 import { StyleSheet, View, SafeAreaView, Dimensions, Alert } from "react-native";
 
 import { IRoomEntity } from "../types/room.entity";
@@ -16,11 +16,7 @@ interface IMarkedDates {
             startingDay?: boolean;
             endingDay?: boolean;
             color: string;
-            // Other properties you want to set for these periods
-            // For example:
-            // textColor?: string;
         }[];
-        // Other properties for each date
     };
 }
 
@@ -48,9 +44,6 @@ const calculateMarkedDates = (rooms: IRoomEntity[], statusesColors: TSatusColors
                 startingDay: true,
                 endingDay: true,
                 color: statusesColors[booking.status],
-                // Other properties you want to set for these periods
-                // For example:
-                // textColor: 'white',
             });
 
             if (formattedStartDate !== formattedEndDate) {
@@ -65,9 +58,6 @@ const calculateMarkedDates = (rooms: IRoomEntity[], statusesColors: TSatusColors
                 markedDates[formattedEndDate].periods?.push({
                     endingDay: true,
                     color: statusesColors[booking.status],
-                    // Other properties you want to set for these periods
-                    // For example:
-                    // textColor: 'white',
                 });
 
                 let currentDate = new Date(startDate);
@@ -85,9 +75,6 @@ const calculateMarkedDates = (rooms: IRoomEntity[], statusesColors: TSatusColors
 
                     markedDates[formattedDate].periods?.push({
                         color: statusesColors[booking.status],
-                        // Other properties you want to set for these periods
-                        // For example:
-                        // textColor: 'white',
                     });
 
                     currentDate.setDate(currentDate.getDate() + 1);
@@ -98,10 +85,15 @@ const calculateMarkedDates = (rooms: IRoomEntity[], statusesColors: TSatusColors
     return markedDates;
 };
 
+const Modal_States = {
+    fab: "fab",
+    filter: "filter",
+}
+
 export default function Home({ navigation: { navigate } }: any) {
     const { colors } = useAppTheme();
     const [date, setDate] = useState<Date>(new Date());
-    const [isFabOpen, setIsFabOpen] = useState(false);
+    const [isModalState, setIsModalState] = useState<string | null>(null);
 
     const isFocused = useIsFocused();
     const { queryRoom: { data, isLoading, isRefetching }, isVisibleFullCalendar } = useCalendar();
@@ -122,15 +114,7 @@ export default function Home({ navigation: { navigate } }: any) {
         }
     }, [data])
 
-    // useEffect(() => {
-    //     // Calculate markedDates when the modal is opened
-    //     if (!markedDates || isVisibleFullCalendar) {
-    //         const calculatedDates = calculateMarkedDates(rooms);
-    //         setMarkedDates(calculatedDates);
-    //     }
-    // }, [isVisibleFullCalendar]);
-
-    const onStateChange = ({ open }: { open: boolean }) => setIsFabOpen(pr => !pr);
+    const onStateChange = () => setIsModalState(prev => prev === Modal_States.fab ? null : Modal_States.fab);
 
     return (
         <SafeAreaView style={styles.safe}>
@@ -140,6 +124,7 @@ export default function Home({ navigation: { navigate } }: any) {
                         <CalendarList
                             // Configure your calendar props here
                             // For instance:
+                            horizontal
                             monthFormat={'MMMM yyyy'}
                             hideExtraDays={true}
                             firstDay={1}
@@ -165,13 +150,26 @@ export default function Home({ navigation: { navigate } }: any) {
             </Collapsible>
 
             <Suspense fallback={<ActivityIndicator animating={true} color={colors.menuColor} />}>
-                <WeekCalendar date={date} rooms={data} navigate={navigate} isLoadingRooms={(isLoading || isRefetching)} statusesColors={statusesColors} />
+                <WeekCalendar
+                    date={date}
+                    rooms={data}
+                    navigate={navigate}
+                    isLoadingRooms={(isLoading || isRefetching)}
+                    statusesColors={statusesColors}
+                    onOpenFilter={() => setIsModalState(Modal_States.filter)}
+                />
             </Suspense>
+
+            {/* <Portal>
+                <Modal visible={isModalState === Modal_States.filter} onDismiss={() => setIsModalState(null)} contentContainerStyle={{ backgroundColor: 'white', padding: 20 }}>
+                    <Text>Example Modal.  Click outside this area to dismiss.</Text>
+                </Modal>
+            </Portal> */}
 
             {!isLoading && <Portal>
                 <FAB.Group
-                    open={isFabOpen}
-                    visible={isFocused}
+                    open={isModalState === Modal_States.fab}
+                    visible={isFocused && (isModalState === null || isModalState === Modal_States.fab)}
                     icon={'plus'}
                     actions={[
                         {

@@ -129,13 +129,6 @@ export default function PofileRoute() {
                         onChangeText={formik.handleChange('address')}
                     />
                 </View>
-
-                {/* <View style={{ marginTop: 20 }}>
-                    <Text>Aккаунт створено:</Text>
-                    <Text style={{ color: colors.grayColor }}>{user?.created_at}</Text>
-                    <Text>Aккаунт оновлено:</Text>
-                    <Text style={{ color: colors.grayColor }}>{user?.updated_at}</Text>
-                </View> */}
             </ScrollView>
             <Button
                 loading={isPending}

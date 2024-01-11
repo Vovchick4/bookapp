@@ -1,10 +1,10 @@
-import { Avatar, Drawer, Icon, Text } from "react-native-paper";
+import { Avatar, Drawer, Text } from "react-native-paper";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "../contexts/auth";
-import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import { EUserRole } from "../types/user.entity";
+import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 export default function DrawerContent(props: any) {
     const { colors } = useAppTheme();
