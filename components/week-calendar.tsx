@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { format, utcToZonedTime } from "date-fns-tz";
-import { addDays, differenceInDays, eachDayOfInterval, isSameDay } from "date-fns";
+import { addDays, differenceInDays, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
 import { NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
 import defineBgColor from "../utils/define-bg-color";
 import { ActivityIndicator } from "react-native-paper";
-import { TSatusColors, useCalendar } from "../contexts/calendar";
+import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 type Props = {
@@ -24,7 +24,7 @@ const kievTimeZone = 'Europe/Kiev';
 
 export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, statusesColors, onOpenFilter }: Props) {
     const { colors } = useAppTheme();
-    const { onChangeInterval } = useCalendar();
+    const { calendarViewType, onChangeInterval } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
     const [pos, setPos] = useState(0);
     const scrollViewRef = useRef<ScrollView | null>(null);
@@ -70,7 +70,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const loadPreviousData = ({ layoutMeasurement }: any) => {
         // Логіка для підгрузки даних вліво
         // Наприклад, якщо ви хочете завантажити попередні тижні
-        const newDates = getDatesForMonth(displayedDates[0], -7);
+        const newDates = getDatesForMonth(displayedDates[0], calendarViewType === ECalendarViewType.week ? -7 : -31);
 
         setDisplayedDates([...newDates, ...displayedDates]);
 
@@ -99,7 +99,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                         onPress={() => navigate("CalendarController", { mode: "create", is_room_vis: false, type: "event", room_id: room.id, roomName: room.name, start_date: new Date(week) })}
                     >
                         <View style={[styles.roomRow, { width: 50 }]}>
-                            <View style={[styles.roomCell, { backgroundColor: defineBgColor(room), borderRightWidth: 1, borderRightColor: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? statusesColors[events[0].status] : colors.menuColor : colors.menuColor, }]}>
+                            <View style={[styles.roomCell, { backgroundColor: defineBgColor(room), borderRightWidth: 1, borderRightColor: (events && events.length > 0) ? isWithinInterval(addDays(week, 1), { start: new Date(events[0].start_date), end: new Date(events[0].end_date) }) ? hexToRgba(statusesColors[events[0].status], 0.5) || "red" : colors.menuColor : colors.menuColor, }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
                                     return (
                                         <TouchableNativeFeedback
@@ -119,6 +119,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                 {isSameDay(week, new Date(event.start_date)) && (
                                                     <View
                                                         style={{
+                                                            opacity: 0.5,
                                                             width: (differenceInDays(new Date(event.end_date), new Date(event.start_date)) + 1) * 50,
                                                             zIndex: 9999,
                                                             position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'
@@ -132,7 +133,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                                 position: 'absolute',
                                                                 zIndex: 9999,
                                                             }}
-                                                        >booksa askd kas DSF SDF SDF SDF SDF SD F SD
+                                                        >{event.name}
                                                         </Text>
                                                     </View>
                                                 )}
@@ -224,9 +225,9 @@ const getEventsForRoomAndDay = (room: IRoomEntity, startDate: Date, endDate: Dat
     return eventsForRoomAndDay;
 };
 
-const getDatesForMonth = (baseDate: Date, numberDays: number = 0): Date[] => {
+const getDatesForMonth = (baseDate: Date, numberDays: number = 0, viweType: ECalendarViewType = ECalendarViewType.week): Date[] => {
     const startDateKiev = utcToZonedTime(addDays(baseDate, numberDays), kievTimeZone);
-    const endDateKiev = utcToZonedTime(addDays(startDateKiev, 6), kievTimeZone);
+    const endDateKiev = utcToZonedTime(addDays(startDateKiev, viweType === ECalendarViewType.week ? 6 : 31), kievTimeZone);
 
     const week = eachDayOfInterval({
         start: startDateKiev,

@@ -1,14 +1,15 @@
 import Collapsible from "react-native-collapsible";
 import { CalendarList } from "react-native-calendars";
-import { useIsFocused } from "@react-navigation/native";
-import { Suspense, lazy, useMemo, useState } from "react";
-import { ActivityIndicator, FAB, Modal, Portal, Text } from "react-native-paper";
+import { useIsFocused, useFocusEffect } from "@react-navigation/native";
+import { Suspense, lazy, useCallback, useMemo, useState } from "react";
+import * as ScreenOrientation from 'expo-screen-orientation';
+import { ActivityIndicator, FAB, Portal } from "react-native-paper";
 import { StyleSheet, View, SafeAreaView, Dimensions, Alert } from "react-native";
 
 import { IRoomEntity } from "../types/room.entity";
 import { EventStatus } from "../types/event.entity";
-import { TSatusColors, useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
 
 interface IMarkedDates {
     [date: string]: {
@@ -96,7 +97,7 @@ export default function Home({ navigation: { navigate } }: any) {
     const [isModalState, setIsModalState] = useState<string | null>(null);
 
     const isFocused = useIsFocused();
-    const { queryRoom: { data, isLoading, isRefetching }, isVisibleFullCalendar } = useCalendar();
+    const { queryRoom: { data, isLoading, isRefetching }, calendarViewType, isVisibleFullCalendar } = useCalendar();
 
     const { height: screenHeight } = Dimensions.get('window');
     const halfScreenHeight = screenHeight / 2;
@@ -113,6 +114,20 @@ export default function Home({ navigation: { navigate } }: any) {
             return calculateMarkedDates(data, statusesColors);
         }
     }, [data])
+
+    useFocusEffect(
+        useCallback(() => {
+            if (calendarViewType === ECalendarViewType.month) {
+                (async () => {
+                    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
+                })();
+            }
+
+            return async () => {
+                await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
+            }
+        }, [calendarViewType])
+    )
 
     const onStateChange = () => setIsModalState(prev => prev === Modal_States.fab ? null : Modal_States.fab);
 

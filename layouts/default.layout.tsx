@@ -1,18 +1,18 @@
-import { Suspense, lazy, Fragment, useEffect, useRef } from "react";
 import { Animated, Text, View } from "react-native";
+import { Suspense, lazy, Fragment, useEffect, useRef, useState } from "react";
 import Svg, { G, Path } from "react-native-svg";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ActivityIndicator, IconButton } from "react-native-paper";
+import { Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { ActivityIndicator, IconButton, Menu, Button } from "react-native-paper";
 
 import { useAuth } from "../contexts/auth";
-import { useCalendar } from "../contexts/calendar";
+import { ECalendarViewType, useCalendar } from "../contexts/calendar";
 import { DrawerContent, StatusBar } from "../components";
-import { CompanyScreen, ProfileScreen, FinancesScreen, EmployeeScreen } from "../screens";
 import CalendarController from "../screens/calendar-controller";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import { CompanyScreen, ProfileScreen, FinancesScreen, EmployeeScreen } from "../screens";
 
 const HomeScreen = lazy(() => import('../screens/home'));
 // const CalendarControllerScreen = lazy(() => import('../screens/calendar-controller'));
@@ -23,7 +23,8 @@ const Stack = createNativeStackNavigator();
 export default function DefaultLayout() {
     const { colors } = useAppTheme();
     const { user, signOut } = useAuth();
-    const { queryRoom: { refetch, isLoading, isRefetching }, currentInterval, openModal } = useCalendar();
+    const [visibleMenu, setVisibleMenu] = useState(false);
+    const { queryRoom: { refetch, isLoading, isRefetching }, calendarViewType, currentInterval, openModal, onChangeView } = useCalendar();
     const spinValue = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -82,6 +83,18 @@ export default function DefaultLayout() {
                                             </Svg>
                                         </View>
                                     </TouchableOpacity>
+
+                                    <Menu
+                                        visible={visibleMenu}
+                                        onDismiss={() => setVisibleMenu(false)}
+                                        anchor={
+                                            <TouchableOpacity onPress={() => setVisibleMenu(true)}>
+                                                <Entypo size={19} color={colors.surface} name="dots-three-vertical" />
+                                            </TouchableOpacity>
+                                        }>
+                                        <Menu.Item onPress={() => onChangeView(ECalendarViewType.week)} title="Week View" leadingIcon={() => <MaterialCommunityIcons name="calendar-week" size={22} color={calendarViewType === ECalendarViewType.week ? 'red' : 'black'} />} titleStyle={{ color: calendarViewType === ECalendarViewType.week ? 'red' : 'black' }} />
+                                        <Menu.Item onPress={() => onChangeView(ECalendarViewType.month)} title="Month View" leadingIcon={() => <MaterialCommunityIcons name="calendar-month-outline" size={22} color={calendarViewType === ECalendarViewType.month ? 'red' : 'black'} />} titleStyle={{ color: calendarViewType === ECalendarViewType.month ? 'red' : 'black' }} />
+                                    </Menu>
                                 </View>
                             )
                         }}

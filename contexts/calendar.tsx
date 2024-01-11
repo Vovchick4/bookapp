@@ -1,18 +1,27 @@
+import { useContext, useState, createContext, useRef, useEffect } from "react";
 import { format } from "date-fns-tz";
-import { useContext, useState, createContext, useRef } from "react";
-import useGetQueryRooms from "../hooks/use-get-query-rooms";
-import { IRoomEntity } from "../types/room.entity";
 import { UseQueryResult } from "@tanstack/react-query";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { IRoomEntity } from "../types/room.entity";
+import useGetQueryRooms from "../hooks/use-get-query-rooms";
+
+export enum ECalendarViewType {
+    week = "week",
+    month = "month",
+}
 
 interface CalendarProviderProps {
     children: JSX.Element
 }
 
 interface CalendarContextData {
+    calendarViewType: ECalendarViewType,
     queryRoom: UseQueryResult<IRoomEntity[], Error>
     saveHeaderButtonRef: React.MutableRefObject<null>,
     currentInterval: string,
     isVisibleFullCalendar: boolean,
+    onChangeView: (value: ECalendarViewType) => void,
     openModal: () => void,
     onChangeInterval: (date: Date[], pos: number) => void,
 }
@@ -34,8 +43,18 @@ export function useCalendar() {
 export function CalendarProvider({ children }: CalendarProviderProps) {
     const queryRooms = useGetQueryRooms();
     const saveHeaderButtonRef = useRef(null);
-    const [currentInterval, setCurrentInterval] = useState('')
-    const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false)
+    const [currentInterval, setCurrentInterval] = useState('');
+    const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false);
+    const [calendarViewType, setCalendarViewType] = useState(ECalendarViewType.week);
+
+    useEffect(() => {
+        (async () => {
+            const calendarViewType = await AsyncStorage.getItem("calendarViewType");
+            if (calendarViewType) {
+                setCalendarViewType(JSON.parse(calendarViewType));
+            }
+        })();
+    }, [])
 
     const onChangeInterval = (date: Date[], pos: number) => {
         setCurrentInterval(`${format(date[pos + 4], 'MMM, yyyy', { timeZone: 'Europe/Kiev' })}`);
@@ -46,8 +65,17 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         setIsVisibleFulliCalendar(prev => !prev)
     }
 
+    const onChangeView = async (value: ECalendarViewType) => {
+        try {
+            await AsyncStorage.setItem("calendarViewType", value);
+            setCalendarViewType(value);
+        } catch (err) {
+            throw new Error((err as Error).message);
+        }
+    };
+
     return (
-        <CalendarContext.Provider value={{ queryRoom: queryRooms, saveHeaderButtonRef, isVisibleFullCalendar, currentInterval, openModal, onChangeInterval }}>
+        <CalendarContext.Provider value={{ calendarViewType, queryRoom: queryRooms, saveHeaderButtonRef, isVisibleFullCalendar, currentInterval, onChangeView, openModal, onChangeInterval }}>
             {children}
         </CalendarContext.Provider>
     )
