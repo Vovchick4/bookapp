@@ -1,4 +1,4 @@
-import { useContext, useState, createContext, useRef, useEffect } from "react";
+import { useContext, useState, createContext, useRef, useEffect, useTransition } from "react";
 import { format } from "date-fns-tz";
 import { UseQueryResult } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -46,6 +46,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     const [currentInterval, setCurrentInterval] = useState('');
     const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false);
     const [calendarViewType, setCalendarViewType] = useState(ECalendarViewType.week);
+    const [isPending, startTransiton] = useTransition();
 
     useEffect(() => {
         (async () => {
@@ -57,7 +58,9 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     }, [])
 
     const onChangeInterval = (date: Date[], pos: number) => {
-        setCurrentInterval(`${format(date[pos + 4], 'MMM, yyyy', { timeZone: 'Europe/Kiev' })}`);
+        startTransiton(() => {
+            setCurrentInterval(`${format(date[pos + 4], 'MMM, yyyy', { timeZone: 'Europe/Kiev' })}`);
+        })
         // setCurrentInterval(`${format(date[pos + 1], 'MMM d', { timeZone: 'Europe/Kiev' })} - ${format(date[pos + 6], 'MMM d, yyyy', { timeZone: 'Europe/Kiev' })}`);
     }
 

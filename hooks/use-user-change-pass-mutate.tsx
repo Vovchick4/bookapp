@@ -1,27 +1,27 @@
 import Toast from "react-native-toast-message";
 import { useMutation } from "@tanstack/react-query";
-import { updateCompany } from "../api";
-import { IUserEntity, TCompanyUpdatePayload } from "../types/user.entity";
-import { queryClient } from "../providers/with-react-query/with-react-query";
 
-export default function useCompanyUpdateMutate() {
-    return useMutation<IUserEntity, Error, TCompanyUpdatePayload>(
+import { changePassUser } from "../api";
+import { IUserEntity } from "../types/user.entity";
+
+export default function useUserChangePassMutate({ onSuccess }: { onSuccess: () => void }) {
+    return useMutation<IUserEntity, Error, { password: string, new_password: string }>(
         {
-            mutationKey: ["update-company"],
+            mutationKey: ["change-pass-user"],
             mutationFn: async (data) => {
                 try {
-                    const res = (await updateCompany(data));
-                    await queryClient.refetchQueries({ queryKey: ['get-user'] });
+                    const res = (await changePassUser(data));
                     return res.data
                 } catch (error) {
                     throw (error as any).response?.data || { message: 'An error occurred' }
                 }
             },
             onSuccess: () => {
+                onSuccess();
                 Toast.show({
                     type: 'success',
                     text1: 'Успішно оновлено!',
-                    text2: 'Дані про компанію оновлено👋.'
+                    text2: 'Ваш пароль було змінено👋.'
                 });
             },
             onError: (error) => {

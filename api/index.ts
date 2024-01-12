@@ -13,6 +13,10 @@ export const getUserFinancesReport = async (dates: TDateString) => {
     return (await axios.get('/user/get-report', { params: dates })).data;
 }
 
+export const changePassUser = async (data: { password: string, new_password: string }) => {
+    return (await axios.post('/user/change-pass', JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })).data;
+}
+
 export const updateUser = async (data: TUserUpdatePayload) => {
     return (await axios.put('/user/update', JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })).data;
 }

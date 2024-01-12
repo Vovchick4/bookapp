@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { format, utcToZonedTime } from "date-fns-tz";
 import { addDays, differenceInDays, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
@@ -8,8 +8,8 @@ import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
 import defineBgColor from "../utils/define-bg-color";
 import { ActivityIndicator } from "react-native-paper";
-import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
+import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
 
 type Props = {
     date: Date;
@@ -27,7 +27,10 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const { calendarViewType, onChangeInterval } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
     const [pos, setPos] = useState(0);
+    const deferredPos = useDeferredValue(pos);
+    const deferredDates = useDeferredValue(displayedDates);
     const scrollViewRef = useRef<ScrollView | null>(null);
+    const [isPending, startTransiton] = useTransition();
 
     useEffect(() => {
         if (date) {
@@ -38,26 +41,30 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     }, [date]);
 
     useEffect(() => {
-        if (displayedDates && displayedDates[pos + 4]) {
-            onChangeInterval(displayedDates, pos); // get current date interval
+        if (deferredDates && deferredDates[pos + 4]) {
+            onChangeInterval(deferredDates, pos); // get current date interval
         }
-    }, [pos, displayedDates])
+    }, [deferredPos, deferredDates])
 
     const handleScroll = (event: NativeSyntheticEvent<any>) => {
         const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
         // console.log("🚀 ~ file: week-calendar.tsx:35 ~ handleScroll ~ contentOffset:", contentOffset, layoutMeasurement.width, contentSize.width)
 
         if (contentOffset.x < 10) {
-            loadPreviousData({ layoutMeasurement }); // Функція для підгрузки даних вліво
+            startTransiton(() => {
+                loadPreviousData({ layoutMeasurement }); // Функція для підгрузки даних вліво
+            })
         } else if (contentOffset.x > contentSize.width - layoutMeasurement.width - 100) {
-            loadNextData(); // Функція для підгрузки даних вправо
+            startTransiton(() => {
+                loadNextData(); // Функція для підгрузки даних вправо
+            })
         }
 
 
         // // Визначаємо інтервал після того, як скрол зупинився з затримкою 200 мс
         // const handleStopScrolling = setTimeout(() => {
         const pageIndex = Math.floor(contentOffset.x / layoutMeasurement.width);
-        const posAfterScroll = pageIndex * (displayedDates.length / 7);
+        const posAfterScroll = pageIndex * (deferredDates.length / 7);
         setPos(posAfterScroll);
 
         //     // Підгрузка додаткових даних вліво або вправо
@@ -70,9 +77,9 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const loadPreviousData = ({ layoutMeasurement }: any) => {
         // Логіка для підгрузки даних вліво
         // Наприклад, якщо ви хочете завантажити попередні тижні
-        const newDates = getDatesForMonth(displayedDates[0], calendarViewType === ECalendarViewType.week ? -7 : -31);
+        const newDates = getDatesForMonth(deferredDates[0], calendarViewType === ECalendarViewType.week ? -7 : -31);
 
-        setDisplayedDates([...newDates, ...displayedDates]);
+        setDisplayedDates([...newDates, ...deferredDates]);
 
         if (scrollViewRef.current) {
             scrollViewRef.current.scrollTo({ x: layoutMeasurement.width, animated: false });
@@ -82,9 +89,9 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const loadNextData = () => {
         // Логіка для підгрузки даних вправо
         // Наприклад, якщо ви хочете завантажити наступні тижні
-        const newDates = getDatesForMonth(displayedDates[displayedDates.length - 1], 1);
+        const newDates = getDatesForMonth(deferredDates[deferredDates.length - 1], 1);
 
-        setDisplayedDates([...displayedDates, ...newDates]);
+        setDisplayedDates([...deferredDates, ...newDates]);
     };
 
     const RenderRoomRows = ({ week }: { week: Date }) => {
@@ -193,7 +200,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                 onScroll={handleScroll}
                 scrollEventThrottle={32}
             >
-                {displayedDates.map((week, index) => (
+                {deferredDates.map((week, index) => (
                     <View key={index}>
                         <View style={[styles.row, isSameDay(week, new Date()) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor, backgroundColor: colors.orangeColor } : { width: 50, borderRightWidth: 1, borderRightColor: colors.menuColor }]}>
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

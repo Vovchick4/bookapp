@@ -1,3 +1,4 @@
+import Toast from "react-native-toast-message";
 import { useMutation } from "@tanstack/react-query";
 
 import { updateUser } from "../api";
@@ -16,6 +17,20 @@ export default function useUserUpdateMutate() {
                 } catch (error) {
                     throw (error as any).response?.data || { message: 'An error occurred' }
                 }
+            },
+            onSuccess: () => {
+                Toast.show({
+                    type: 'success',
+                    text1: 'Успішно оновлено!',
+                    text2: 'Ваші дані оновлено👋.'
+                });
+            },
+            onError: (error) => {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Помилка!',
+                    text2: error.message
+                });
             }
         }
     );

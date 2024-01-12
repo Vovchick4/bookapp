@@ -22,7 +22,7 @@ const validationSchema = Yup.object({
     password: Yup.string().trim().required("Поле пароль є обовязковим"),
     confirmPassword: Yup.string().trim()
         .required("Поле підтвердження є обовязковим")
-        .oneOf([Yup.ref('password')], 'Пароль має співпалати'),
+        .oneOf([Yup.ref('password')], 'Пароль має співпадати'),
 })
 
 export default function Register({ navigation: { navigate } }: any) {
