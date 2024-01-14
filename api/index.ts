@@ -17,6 +17,10 @@ export const changePassUser = async (data: { password: string, new_password: str
     return (await axios.post('/user/change-pass', JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })).data;
 }
 
+export const resetPassUser = async (data: { email: string }) => {
+    return (await axios.post('/user/reset-pass', JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })).data;
+}
+
 export const updateUser = async (data: TUserUpdatePayload) => {
     return (await axios.put('/user/update', JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } })).data;
 }

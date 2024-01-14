@@ -1,8 +1,8 @@
-import { useMemo } from "react";
 import { View, ScrollView } from "react-native"
 import { DataTable, Text } from "react-native-paper"
-import { TDetails, useFinancesReport } from "../contexts/finances-report"
+
 import { EventStatus } from "../types/event.entity";
+import { TDetails, useFinancesReport } from "../contexts/finances-report"
 
 const getFinalPricesDetail = (data: TDetails, status: EventStatus, key: string) => {
     if (!Object.keys(data) && !Object.keys(data).reduce) {
@@ -36,11 +36,11 @@ export default function DetailRoute() {
                             <DataTable.Cell>{detail[key].name}</DataTable.Cell>
                             <DataTable.Cell>{detail[key].bookings['deposit'].reduce((pr, nx) => (pr + nx.down_payment), 0)}</DataTable.Cell>
                             <DataTable.Cell>{detail[key].bookings['fullpaid'].reduce((pr, nx) => (pr + nx.final_price), 0)}</DataTable.Cell>
-                            <DataTable.Cell>{detail[key].bookings['nopaid'].reduce((pr, nx) => (pr + nx.final_price), 0)}</DataTable.Cell>
+                            <DataTable.Cell>{detail[key].bookings['nopaid'].reduce((pr, nx) => (pr + nx.final_price), 0) + detail[key].bookings['deposit'].reduce((pr, nx) => (pr + nx.payment_on_place), 0)}</DataTable.Cell>
                             <DataTable.Cell>{
                                 detail[key].bookings['deposit'].reduce((pr, nx) => (pr + nx.down_payment), 0) +
                                 detail[key].bookings['fullpaid'].reduce((pr, nx) => (pr + nx.final_price), 0) +
-                                detail[key].bookings['nopaid'].reduce((pr, nx) => (pr + nx.final_price), 0)
+                                detail[key].bookings['nopaid'].reduce((pr, nx) => (pr + nx.final_price), 0) + + detail[key].bookings['deposit'].reduce((pr, nx) => (pr + nx.payment_on_place), 0)
                             }
                             </DataTable.Cell>
                         </DataTable.Row>
@@ -56,12 +56,12 @@ export default function DetailRoute() {
                     {getFinalPricesDetail(detail, EventStatus.fullpaid, 'final_price')}
                 </DataTable.Title>
                 <DataTable.Title>
-                    {getFinalPricesDetail(detail, EventStatus.nopaid, 'nopaid')}
+                    {getFinalPricesDetail(detail, EventStatus.nopaid, 'final_price') + getFinalPricesDetail(detail, EventStatus.deposit, 'payment_on_place')}
                 </DataTable.Title>
                 <DataTable.Title>
                     {getFinalPricesDetail(detail, EventStatus.deposit, 'down_payment') +
                         getFinalPricesDetail(detail, EventStatus.fullpaid, 'final_price') +
-                        getFinalPricesDetail(detail, EventStatus.nopaid, 'nopaid')}
+                        getFinalPricesDetail(detail, EventStatus.nopaid, 'final_price') + getFinalPricesDetail(detail, EventStatus.deposit, 'payment_on_place')}
                 </DataTable.Title>
             </DataTable.Header>
         </View>
