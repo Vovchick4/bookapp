@@ -1,7 +1,7 @@
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import { format, utcToZonedTime } from "date-fns-tz";
-import { addDays, differenceInDays, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
+import { addDays, addMonths, differenceInDays, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
 import { NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import hexToRgba from "../utils/hex-to-rgba";
@@ -34,11 +34,11 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
 
     useEffect(() => {
         if (date) {
-            const initialDates = getDatesForMonth(date); // Initial two months
+            const initialDates = getDatesForMonth(date, 0, calendarViewType); // Initial two months
             setDisplayedDates(initialDates);
             onChangeInterval(initialDates, 0);
         }
-    }, [date]);
+    }, [date, calendarViewType]);
 
     useEffect(() => {
         if (deferredDates && deferredDates[pos + 4]) {
@@ -77,7 +77,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const loadPreviousData = ({ layoutMeasurement }: any) => {
         // Логіка для підгрузки даних вліво
         // Наприклад, якщо ви хочете завантажити попередні тижні
-        const newDates = getDatesForMonth(deferredDates[0], calendarViewType === ECalendarViewType.week ? -7 : -31);
+        const newDates = getDatesForMonth(deferredDates[0], -7);
 
         setDisplayedDates([...newDates, ...deferredDates]);
 
@@ -233,8 +233,8 @@ const getEventsForRoomAndDay = (room: IRoomEntity, startDate: Date, endDate: Dat
 };
 
 const getDatesForMonth = (baseDate: Date, numberDays: number = 0, viweType: ECalendarViewType = ECalendarViewType.week): Date[] => {
-    const startDateKiev = utcToZonedTime(addDays(baseDate, numberDays), kievTimeZone);
-    const endDateKiev = utcToZonedTime(addDays(startDateKiev, viweType === ECalendarViewType.week ? 6 : 31), kievTimeZone);
+    const startDateKiev = utcToZonedTime(viweType === ECalendarViewType.week ? addDays(baseDate, numberDays) : addMonths(baseDate, -1), kievTimeZone);
+    const endDateKiev = utcToZonedTime(viweType === ECalendarViewType.week ? addDays(startDateKiev, 6) : addMonths(startDateKiev, 1), kievTimeZone);
 
     const week = eachDayOfInterval({
         start: startDateKiev,

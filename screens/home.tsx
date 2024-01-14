@@ -4,7 +4,7 @@ import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { Suspense, lazy, useCallback, useMemo, useState } from "react";
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ActivityIndicator, FAB, Portal } from "react-native-paper";
-import { StyleSheet, View, SafeAreaView, Dimensions, Alert } from "react-native";
+import { StyleSheet, View, ScrollView, SafeAreaView, Dimensions, Alert } from "react-native";
 
 import { IRoomEntity } from "../types/room.entity";
 import { EventStatus } from "../types/event.entity";
@@ -139,7 +139,7 @@ export default function Home({ navigation: { navigate } }: any) {
                         <CalendarList
                             // Configure your calendar props here
                             // For instance:
-                            horizontal
+                            horizontal={calendarViewType === ECalendarViewType.week}
                             monthFormat={'MMMM yyyy'}
                             hideExtraDays={true}
                             firstDay={1}
