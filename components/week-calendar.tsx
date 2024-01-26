@@ -1,13 +1,13 @@
-import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
-import { AntDesign, Feather } from "@expo/vector-icons";
 import { format, utcToZonedTime } from "date-fns-tz";
+import { ActivityIndicator } from "react-native-paper";
+import { AntDesign, Feather } from "@expo/vector-icons";
+import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { addDays, addMonths, differenceInDays, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
 import { NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
 import defineBgColor from "../utils/define-bg-color";
-import { ActivityIndicator } from "react-native-paper";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
 
