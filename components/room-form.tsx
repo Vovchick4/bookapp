@@ -37,6 +37,9 @@ const roomTypes: DropDownPropsInterface['list'] = [{
 }, {
     label: 'Віла',
     value: 'Віла',
+}, {
+    label: 'Студія',
+    value: 'Студія',
 }]
 
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + "", value: index }));

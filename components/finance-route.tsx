@@ -15,7 +15,7 @@ export default function FinanceRoute() {
         <ScrollView style={{ padding: 15 }}>
             <DatePickerInput
                 mode='flat'
-                locale="en"
+                locale="en-GB"
                 label="З"
                 inputMode="start"
                 value={dateString.start_date}
@@ -23,7 +23,7 @@ export default function FinanceRoute() {
             />
             <DatePickerInput
                 mode='flat'
-                locale="en"
+                locale="en-GB"
                 label="До"
                 inputMode="start"
                 value={dateString.end_date}
@@ -32,7 +32,7 @@ export default function FinanceRoute() {
             <Button
                 loading={isPending}
                 disabled={isPending}
-                style={{ marginTop: 10 }}
+                style={{ marginTop: 10, backgroundColor: colors.orangeColor }}
                 mode='contained'
                 onPress={() => fetchBookings(dateString)}
             >

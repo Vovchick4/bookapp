@@ -4,6 +4,7 @@ import {
 } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
+import { enGB, registerTranslation } from 'react-native-paper-dates';
 
 import { Splash } from './components';
 import withProviders from './providers';
@@ -15,6 +16,7 @@ import type { IUserEntity } from './types/user.entity';
 import { CalendarProvider } from './contexts/calendar';
 
 axios.defaults.baseURL = "https://app.backend.booking.wmapartments.com.ua/api";
+registerTranslation('en-GB', enGB);
 
 function AppContent({ user }: { user: IUserEntity | null }) {
   return (

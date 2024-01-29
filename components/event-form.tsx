@@ -8,9 +8,10 @@ import { ActivityIndicator, Button, IconButton, RadioButton, Surface, Text, Text
 import { EventStatus, IEventEntity } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import Collapsible from "react-native-collapsible";
-import { differenceInDays, format } from "date-fns";
+import { addDays, differenceInDays, format } from "date-fns";
 import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
 import { utcToZonedTime } from "date-fns-tz";
+import Counter from "./counter";
 
 interface Props {
     mode?: string;
@@ -256,23 +257,43 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
     return (
         <Fragment>
             <View style={{ flex: 1, rowGap: 10, padding: 10 }}>
-                <DatePickerInput
-                    mode="outlined"
-                    locale="en"
-                    label="start date"
-                    inputMode="start"
-                    value={values.start_date}
-                    onChange={(date) => handleStartDateChange(date)}
-                />
-                <DatePickerInput
-                    mode="outlined"
-                    locale="en"
-                    label="end date"
-                    inputMode="end"
-                    value={values.end_date}
-                    onChange={(value) => setFieldValue('end_date', value)}
-                    defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
-                />
+                <Surface style={{ elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
+                    <DatePickerInput
+                        mode="outlined"
+                        locale="en-GB"
+                        label="start date"
+                        inputMode="start"
+                        value={values.start_date}
+                        onChange={(date) => handleStartDateChange(date)}
+                    />
+                    <DatePickerInput
+                        mode="outlined"
+                        locale="en-GB"
+                        label="end date"
+                        inputMode="end"
+                        value={values.end_date}
+                        onChange={(value) => setFieldValue('end_date', value)}
+                        defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
+                    />
+                    <Counter
+                        count={differenceInDays(values.start_date || new Date(), values.end_date || new Date())}
+                        onPress={(type) => {
+                            if (values.start_date) {
+                                if (values.end_date) {
+                                    setFieldValue("end_date", addDays(new Date(values.end_date), type === "plus" ? 1 : -1))
+                                } else {
+                                    setFieldValue("end_date", addDays(new Date(values.start_date), type === "plus" ? 2 : -2))
+                                }
+                            } else {
+                                Alert.alert(
+                                    "Виберіть стартову дату!",
+                                    "",
+                                    [{ text: "OK" }]
+                                )
+                            }
+                        }}
+                    />
+                </Surface>
                 {isLoadingRoomsNames && <ActivityIndicator animating />}
                 {(!isLoadingRoomsNames && is_room_vis && mode === 'create' && roomsNames && roomsNames.length > 0) && (
                     <DropDown
@@ -454,8 +475,8 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         onChangeText={handleChange('down_payment')}
                     />
                     <View>
-                        <Text>Ціна на місці:</Text>
-                        <Text>{values.payment_on_place}</Text>
+                        <Text style={{ fontWeight: "800", fontSize: 17 }}>Ціна на місці:</Text>
+                        <Text style={{ fontWeight: "800", fontSize: 17, color: colors.notification }}>{values.payment_on_place}</Text>
                     </View>
                 </Surface>
 
