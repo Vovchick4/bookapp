@@ -8,6 +8,7 @@ import { Button, Checkbox, Icon, IconButton, Modal, Portal, Text, TextInput } fr
 import { IRoomEntity } from "../types/room.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import defineBgColor from "../utils/define-bg-color";
+import hexToRgba from "../utils/hex-to-rgba";
 
 interface Props {
     mode?: string;
@@ -92,10 +93,10 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
     );
 
     useEffect(() => {
-        StatusBar.setBackgroundColor(values.with_color ? defineBgColor(roomData) : colors.menuColor);
+        StatusBar.setBackgroundColor(values.with_color ? hexToRgba(values.color, 0.2) || "" : colors.menuColor);
         navigation.setOptions({
             headerStyle: {
-                backgroundColor: values.with_color ? defineBgColor(roomData) : colors.menuColor,
+                backgroundColor: values.with_color ? hexToRgba(values.color, 0.2) || "": colors.menuColor,
             },
             title: mode === "update" ? "Редагувати помешкання" : "Створити помешкання",
             headerRight: () => (

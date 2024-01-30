@@ -34,6 +34,7 @@ interface Values {
     price_per_day: number;
     final_price: number;
     down_payment: number;
+    down_payment_date: Date | undefined;
     payment_on_place: number;
     notes: string;
     room_id: number;
@@ -77,6 +78,7 @@ const initialValues: Values = {
     price_per_day: 0,
     final_price: 0,
     down_payment: 0,
+    down_payment_date: undefined,
     payment_on_place: 0,
     notes: '',
     room_id: -1
@@ -148,7 +150,10 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                                 // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", new Date(eventData[event]))
                                 setFieldValue('start_date', new Date(eventData["start_date"]));
                                 setFieldValue('end_date', new Date(eventData["end_date"]));
-                            } else {
+                            } else if (event === 'down_payment_date' && eventData['down_payment_date']) {
+                                setFieldValue('down_payment_date', new Date(eventData["down_payment_date"]));
+                            }
+                            else {
                                 // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", event)
                                 setFieldValue(event, eventData[event]);
                             }
@@ -206,9 +211,9 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
 
     useEffect(() => {
         // Calculate price per day whenever price_per_person or the number of people changes
-        const pricePerDay = (values.parents + values.childrens) * values.price_per_person;
+        const pricePerDay = (values.parents + values.childrens);
         setFieldValue('price_per_day', pricePerDay);
-    }, [values.parents, values.childrens, values.price_per_person]);
+    }, [values.parents, values.childrens]);
 
     useEffect(() => {
         if (values.start_date && values.end_date) {
@@ -363,6 +368,15 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
+                        label="Passport"
+                        // error={!!formik.errors.email}
+                        value={values.passport}
+                        // onBlur={formik.handleBlur('email')}
+                        onChangeText={handleChange('passport')}
+                    />
+                    <TextInput
+                        activeOutlineColor={colors.orangeColor}
+                        mode="outlined"
                         label="Email"
                         // error={!!formik.errors.email}
                         autoComplete="email"
@@ -432,27 +446,19 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                                 // onBlur={formik.handleBlur('email')}
                                 onChangeText={handleChange('post_code')}
                             />
-                            <TextInput
-                                activeOutlineColor={colors.orangeColor}
-                                mode="outlined"
-                                label="Passport"
-                                // error={!!formik.errors.email}
-                                value={values.passport}
-                                // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('passport')}
-                            />
+
                         </View>
                     </Collapsible>
                 </Surface>
                 <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
                     <Text>Калькулятор ціни:</Text>
-                    <TextInput
+                    {/* <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
                         label="Ціна за людину"
                         value={String(values.price_per_person)}
                         onChangeText={handleChange('price_per_person')}
-                    />
+                    /> */}
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
@@ -473,6 +479,14 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         label="Завдаток"
                         value={String(values.down_payment)}
                         onChangeText={handleChange('down_payment')}
+                    />
+                    <DatePickerInput
+                        mode="outlined"
+                        locale="en-GB"
+                        label="Дата завдатку"
+                        inputMode="start"
+                        value={values.down_payment_date}
+                        onChange={(value) => setFieldValue('down_payment_date', value)}
                     />
                     <View>
                         <Text style={{ fontWeight: "800", fontSize: 17 }}>Ціна на місці:</Text>

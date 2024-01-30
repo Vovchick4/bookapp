@@ -4,6 +4,7 @@ import { format, utcToZonedTime } from 'date-fns-tz';
 import { UseMutateFunction, useMutation } from '@tanstack/react-query';
 import { getUserFinancesReport } from '../api';
 import { EventStatus, IEventEntity } from '../types/event.entity';
+import { Alert } from "react-native";
 
 interface FinancesProviderProps {
     children: JSX.Element
@@ -54,7 +55,7 @@ const FinancesContext = createContext<FinancesContextData>({} as FinancesContext
 const targetTimeZone = 'Europe/Kiev';
 
 const getPriceByCategory = (data: any, key: string, status: string) => {
-    if (!data[status] && !data[status]?.reduce) {
+    if (!data[status] || !data[status]?.reduce) {
         return 0;
     }
     return data[status].reduce((prev: any, current: any) => {
@@ -113,6 +114,11 @@ export function FinancesProvider({ children }: FinancesProviderProps) {
 
                 return { finance, detail }
             } catch (error) {
+                Alert.alert(
+                    "Помилка!",
+                    (error as Error).message || "",
+                    [{ text: "OK" }]
+                )
                 // console.log("🚀 ~ file: finances-report.tsx:74 ~ mutationFn: ~ res:", error)
                 throw (error as any).response?.data || { message: 'An error occurred' }
             }

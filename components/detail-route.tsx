@@ -5,7 +5,7 @@ import { EventStatus } from "../types/event.entity";
 import { TDetails, useFinancesReport } from "../contexts/finances-report"
 
 const getFinalPricesDetail = (data: TDetails, status: EventStatus, key: string) => {
-    if (!Object.keys(data) && !Object.keys(data).reduce) {
+    if (!Object.keys(data) || !Object.keys(data).reduce) {
         return 0;
     }
     return Object.keys(data).reduce((prev, next) => {
