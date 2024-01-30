@@ -88,7 +88,7 @@ export function FinancesProvider({ children }: FinancesProviderProps) {
                 const finance: TPrices | null = formatedData ? {
                     deposit: getPriceByCategory(formatedData, "down_payment", "deposit"),
                     fullpaid: getPriceByCategory(formatedData, "final_price", "fullpaid"),
-                    no_paid: getPriceByCategory(formatedData, "final_price", "no_paid"),
+                    no_paid: getPriceByCategory(formatedData, "final_price", "nopaid"),
                     payment_on_place: getPriceByCategory(formatedData, "payment_on_place", "deposit")
                 } : null
 
