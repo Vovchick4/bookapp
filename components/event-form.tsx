@@ -281,13 +281,13 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
                     />
                     <Counter
-                        count={differenceInDays(values.start_date || new Date(), values.end_date || new Date())}
+                        count={values.start_date && values.end_date ? differenceInDays(values.start_date || new Date(), values.end_date || new Date()) : 0}
                         onPress={(type) => {
                             if (values.start_date) {
                                 if (values.end_date) {
                                     setFieldValue("end_date", addDays(new Date(values.end_date), type === "plus" ? 1 : -1))
                                 } else {
-                                    setFieldValue("end_date", addDays(new Date(values.start_date), type === "plus" ? 2 : -2))
+                                    setFieldValue("end_date", addDays(new Date(values.start_date), type === "plus" ? 1 : -1))
                                 }
                             } else {
                                 Alert.alert(
