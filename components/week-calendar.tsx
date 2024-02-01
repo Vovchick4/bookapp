@@ -98,6 +98,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
         return rooms && rooms.length !== 0 && rooms.map((room, roomIndex) => {
             const endDate = addDays(week, 1);
             const events = getEventsForRoomAndDay(room, week, endDate);
+            // console.log("🚀 ~ returnrooms&&rooms.length!==0&&rooms.map ~ events:", room.bookings)
 
             return (
                 <View key={roomIndex}>
@@ -123,6 +124,14 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                     paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 5 : 0 : 0,
                                 }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
+                                    const findedSameBookDate = room.bookings.find(({ end_date }) => end_date === event.start_date);
+                                    const findedSameBookDateS = room.bookings.find(({ start_date }) => start_date === event.end_date);
+                                    console.log("🚀 ~ {events&&events.length>0&&events.map ~ findedSameBookDateS:", findedSameBookDateS)
+                                    const isSameEndDate = findedSameBookDate && isSameDay(new Date(findedSameBookDate.end_date), new Date(week));
+                                    const secondSameBookDateIndex = findedSameBookDate && room.bookings.findIndex(({ end_date }) => end_date === findedSameBookDate.end_date);
+                                    const findedSecondSameBookDate = typeof secondSameBookDateIndex === 'number' ? room.bookings[secondSameBookDateIndex] : null;
+                                    const isSameStartDate = findedSameBookDateS && isSameDay(new Date(findedSameBookDateS.start_date), new Date(week));
+
                                     return (
                                         <TouchableNativeFeedback
                                             key={eventIndex}
@@ -131,8 +140,14 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                         >
                                             <View
                                                 style={{
+                                                    position: isSameEndDate ? 'absolute' : 'relative',
+                                                    top: isSameEndDate ? 4.3 : 0,
+                                                    left: isSameEndDate ? 26 : 0,
+                                                    bottom: 0,
+                                                    zIndex: 9999,
                                                     height: '83%',
-                                                    width: '100%',
+                                                    width: isSameEndDate || isSameStartDate ? '55%' : '100%',
+                                                    transform: isSameStartDate ? [{ translateX: -10 }] : [],
                                                     borderTopRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderBottomRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderTopLeftRadius: isSameDay(week, new Date(event.start_date)) ? 5 : 0,
@@ -155,7 +170,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                             numberOfLines={1}
                                                             style={{
                                                                 fontWeight: '800',
-                                                                // width: 100,
+                                                                width: 100,
                                                                 position: 'absolute',
                                                                 zIndex: 9999,
                                                             }}
@@ -178,7 +193,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const RenderWeekView = () => {
         return <ScrollView><View style={[styles.main, { flexDirection: 'row' }]}>
             <View>
-                <View style={{ paddingBottom: 52, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
+                <View style={{ paddingBottom: 66, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
                     {isLoadingRooms && (
                         <View style={{ width: 100, marginTop: 15 }}>
                             <ActivityIndicator animating />
@@ -223,7 +238,8 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                     <View key={index} style={{ position: "relative" }}>
                         <View style={[styles.row, { borderBottomWidth: 1, borderBottomColor: colors.grayColor }, isSaturday(week) || isSunday(week) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor, backgroundColor: hexToRgba(colors.grayColor, 0.1) || "" } : { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor }]}>
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-                            <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'MMM, yyyy', { timeZone: 'Europe/Kiev' })}</Text>
+                                <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'MMM', { timeZone: 'Europe/Kiev' })}</Text>
+                                <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'yyyy', { timeZone: 'Europe/Kiev' })}</Text>
                                 <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'EEE', { timeZone: 'Europe/Kiev' })}</Text>
                                 <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{week.getDate()}</Text>
                             </View>
@@ -232,7 +248,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                         {isSameDay(week, new Date()) && (
                             <View style={{
                                 position: 'absolute',
-                                top: 55,
+                                top: 70,
                                 left: 24,
                                 bottom: 0,
                                 zIndex: -1,
