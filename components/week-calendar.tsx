@@ -120,7 +120,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                 start: new Date(events[0].start_date),
                                                 end: new Date(events[0].end_date)
                                             }) ? hexToRgba(statusesColors[events[0].status], 0.5) || "red" : colors.grayColor : colors.grayColor,
-                                    paddingRight: (events && events.length > 0) ? isSameDay(week, new Date(events[0].end_date)) ? 5 : 0 : 0,
+                                    paddingRight: (events && events.length > 0) ? isSameDay(week, new Date(events[0].end_date)) ? 25 : 0 : 0,
                                     paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 5 : 0 : 0,
                                 }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
@@ -143,8 +143,8 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                     bottom: 0,
                                                     zIndex: 9999,
                                                     height: '83%',
-                                                    width: isSameEndDate || isSameStartDate ? '43%' : '100%',
-                                                    transform: isSameStartDate ? [{ translateX: -13 }] : [],
+                                                    width: isSameEndDate || isSameStartDate ? '80%' : '100%',
+                                                    transform: isSameStartDate ? [{ translateX: -3 }] : [],
                                                     borderTopRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderBottomRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderTopLeftRadius: isSameDay(week, new Date(event.start_date)) ? 5 : 0,
@@ -219,7 +219,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                         {rooms && rooms.length > 0 && rooms.map((room, index) => (
                             <TouchableOpacity
                                 key={index}
-                                style={{ flex: 1, height: 50.2, paddingLeft: 10, alignItems: 'flex-start', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor, borderTopWidth: index === 0 ? 1 : 0, borderTopColor: colors.menuColor }}
+                                style={{ flex: 1, height: 50.2, paddingLeft: 10, alignItems: 'flex-start', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor, borderTopWidth: index === 0 ? 1 : 0, borderTopColor: colors.menuColor, borderLeftColor: room.with_color ? defineBgColor(room, 1) : 'transparent', borderLeftWidth: 4 }}
                                 onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
                                 <Text style={{ fontSize: 12 }} numberOfLines={1}>
                                     <Feather name="user" />

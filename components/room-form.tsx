@@ -46,10 +46,10 @@ const roomTypes: DropDownPropsInterface['list'] = [{
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + "", value: index }));
 
 const roomColors = [
-    "#000000", "#111111", "#222222", "#333333", "#444444",
-    "#555555", "#838388", "#777777", "#888888", "#999999",
-    "#AAAAAA", "#BBBBBB", "#CCCCCC", "#DDDDDD", "#EEEEEE",
-    "#FFFFAA", "#FF0000", "#00FF00", "#0000FF", "#FFFF00"
+    "#000000", "#494754", "#4a5448", "#785a71", "#444444",
+    "#07f78f", "#838388", "#494d33", "#402229", "#e009ce",
+    "#61ab8d", "#06355e", "#090224", "#3802fa", "#e05712",
+    "#9de310", "#FF0000", "#00FF00", "#0000FF", "#FFFF00"
 ];
 
 const initialValues = {
@@ -93,10 +93,10 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
     );
 
     useEffect(() => {
-        StatusBar.setBackgroundColor(values.with_color ? hexToRgba(values.color, 0.2) || "" : colors.menuColor);
+        StatusBar.setBackgroundColor(values.with_color ? hexToRgba(values.color, 0.7) || "" : colors.menuColor);
         navigation.setOptions({
             headerStyle: {
-                backgroundColor: values.with_color ? hexToRgba(values.color, 0.2) || "": colors.menuColor,
+                backgroundColor: values.with_color ? hexToRgba(values.color, 0.7) || "" : colors.menuColor,
             },
             title: mode === "update" ? "Редагувати помешкання" : "Створити помешкання",
             headerRight: () => (
@@ -203,7 +203,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                     onPress={() => setFieldValue('with_color', !values.with_color)}
                 />
                 {values.with_color && <Button
-                    style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: values.color, opacity: 0.2, }}
+                    style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: values.color, opacity: 0.7, }}
                     children={undefined}
                     onPress={() => setVisible(true)}
                 />}
@@ -218,7 +218,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                                 key={color}
                                 children={undefined}
                                 onPress={() => { setFieldValue('color', color); setVisible(false); }}
-                                style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: color, opacity: 0.2, borderWidth: color === values.color ? 2 : 0, borderColor: 'red' }}
+                                style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: color, opacity: 0.7, borderWidth: color === values.color ? 2 : 0, borderColor: 'red' }}
                             />
                         ))}
                     </View>
