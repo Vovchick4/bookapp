@@ -126,10 +126,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
                                     const findedSameBookDate = room.bookings.find(({ end_date }) => end_date === event.start_date);
                                     const findedSameBookDateS = room.bookings.find(({ start_date }) => start_date === event.end_date);
-                                    console.log("🚀 ~ {events&&events.length>0&&events.map ~ findedSameBookDateS:", findedSameBookDateS)
                                     const isSameEndDate = findedSameBookDate && isSameDay(new Date(findedSameBookDate.end_date), new Date(week));
-                                    const secondSameBookDateIndex = findedSameBookDate && room.bookings.findIndex(({ end_date }) => end_date === findedSameBookDate.end_date);
-                                    const findedSecondSameBookDate = typeof secondSameBookDateIndex === 'number' ? room.bookings[secondSameBookDateIndex] : null;
                                     const isSameStartDate = findedSameBookDateS && isSameDay(new Date(findedSameBookDateS.start_date), new Date(week));
 
                                     return (
@@ -142,12 +139,12 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                 style={{
                                                     position: isSameEndDate ? 'absolute' : 'relative',
                                                     top: isSameEndDate ? 4.3 : 0,
-                                                    left: isSameEndDate ? 26 : 0,
+                                                    left: isSameEndDate ? 31 : 0,
                                                     bottom: 0,
                                                     zIndex: 9999,
                                                     height: '83%',
-                                                    width: isSameEndDate || isSameStartDate ? '55%' : '100%',
-                                                    transform: isSameStartDate ? [{ translateX: -10 }] : [],
+                                                    width: isSameEndDate || isSameStartDate ? '43%' : '100%',
+                                                    transform: isSameStartDate ? [{ translateX: -13 }] : [],
                                                     borderTopRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderBottomRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderTopLeftRadius: isSameDay(week, new Date(event.start_date)) ? 5 : 0,
@@ -193,7 +190,14 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const RenderWeekView = () => {
         return <ScrollView><View style={[styles.main, { flexDirection: 'row' }]}>
             <View>
-                <View style={{ paddingBottom: 66, borderRightWidth: 1, borderRightColor: colors.menuColor }}>
+                <View style={{ borderRightWidth: 1, borderRightColor: colors.menuColor }}>
+                    <View style={{ opacity: 0 }}>
+                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
+                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{2023}</Text>
+                        <Text style={{ textAlign: 'center', }}>{"asda"}</Text>
+                        <Text style={{ textAlign: 'center', }}>{1}</Text>
+                    </View>
+
                     {isLoadingRooms && (
                         <View style={{ width: 100, marginTop: 15 }}>
                             <ActivityIndicator animating />
