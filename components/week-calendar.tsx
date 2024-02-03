@@ -119,9 +119,9 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                             isWithinInterval(addDays(week, 1), {
                                                 start: new Date(events[0].start_date),
                                                 end: new Date(events[0].end_date)
-                                            }) ? hexToRgba(statusesColors[events[0].status], 0.5) || "red" : colors.grayColor : colors.grayColor,
+                                            }) ? hexToRgba(statusesColors[events[0].status], 1) || "red" : colors.grayColor : colors.grayColor,
                                     paddingRight: (events && events.length > 0) ? isSameDay(week, new Date(events[0].end_date)) ? 25 : 0 : 0,
-                                    paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 5 : 0 : 0,
+                                    paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 25 : 0 : 0,
                                 }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
                                     const findedSameBookDate = room.bookings.find(({ end_date }) => end_date === event.start_date);
@@ -141,40 +141,20 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                     top: isSameEndDate ? 4.3 : 0,
                                                     left: isSameEndDate ? 31 : 0,
                                                     bottom: 0,
-                                                    zIndex: 9999,
+                                                    zIndex: -1,
                                                     height: '83%',
+                                                    overflow: 'visible',
                                                     width: isSameEndDate || isSameStartDate ? '80%' : '100%',
                                                     transform: isSameStartDate ? [{ translateX: -3 }] : [],
                                                     borderTopRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderBottomRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderTopLeftRadius: isSameDay(week, new Date(event.start_date)) ? 5 : 0,
                                                     borderBottomLeftRadius: isSameDay(week, new Date(event.start_date)) ? 5 : 0,
-                                                    backgroundColor: hexToRgba(statusesColors[event.status], 0.5) || 'red',
+                                                    backgroundColor: hexToRgba(statusesColors[event.status], 1) || 'red',
                                                     // borderRightWidth: 12,
                                                     // borderRightColor: statusesColors[event.status],
                                                 }}
                                             >
-                                                {isSameDay(week, new Date(event.start_date)) && (
-                                                    <View
-                                                        style={{
-                                                            opacity: 0.5,
-                                                            width: (differenceInDays(new Date(event.end_date), new Date(event.start_date)) + 1) * 50,
-                                                            zIndex: 9999,
-                                                            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center'
-                                                        }}
-                                                    >
-                                                        <Text
-                                                            numberOfLines={1}
-                                                            style={{
-                                                                fontWeight: '800',
-                                                                width: 100,
-                                                                position: 'absolute',
-                                                                zIndex: 9999,
-                                                            }}
-                                                        >{event.name}
-                                                        </Text>
-                                                    </View>
-                                                )}
                                             </View>
                                         </TouchableNativeFeedback>
                                     )
