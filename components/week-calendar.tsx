@@ -137,8 +137,8 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                         >
                                             <View
                                                 style={{
-                                                    position: isSameEndDate ? 'absolute' : 'relative',
-                                                    top: isSameEndDate ? 4.3 : 0,
+                                                    position: isSameEndDate || isSameStartDate ? 'absolute' : 'relative',
+                                                    top: isSameEndDate || isSameStartDate ? 4.3 : 0,
                                                     left: isSameEndDate ? 31 : 0,
                                                     bottom: 0,
                                                     zIndex: -1,
