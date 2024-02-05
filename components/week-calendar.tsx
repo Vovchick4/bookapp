@@ -1,9 +1,9 @@
 import { format, utcToZonedTime } from "date-fns-tz";
 import { ActivityIndicator } from "react-native-paper";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
-import { addDays, addMonths, differenceInDays, eachDayOfInterval, isSameDay, isSaturday, isSunday, isWithinInterval } from "date-fns";
-import { NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
+import { addDays, addMonths, eachDayOfInterval, isSameDay, isSaturday, isSunday, isWithinInterval } from "date-fns";
+import { Animated, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
@@ -26,11 +26,10 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const { colors } = useAppTheme();
     const { calendarViewType, onChangeInterval } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
-    // const [pos, setPos] = useState(0);
-    // const deferredPos = useDeferredValue(pos);
     const deferredDates = useDeferredValue(displayedDates);
     const scrollViewRef = useRef<ScrollView | null>(null);
     const [isPending, startTransiton] = useTransition();
+    const translateYValue = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (date) {
@@ -40,15 +39,13 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
         }
     }, [date, calendarViewType]);
 
-    // useEffect(() => {
-    //     if (deferredDates && deferredDates[pos + 4]) {
-    //         onChangeInterval(deferredDates, pos); // get current date interval
-    //     }
-    // }, [deferredPos, deferredDates])
+    const handleStickyScroll = Animated.event(
+        [{ nativeEvent: { contentOffset: { y: translateYValue } } }],
+        { useNativeDriver: false } // Make sure to set useNativeDriver to false
+    );
 
     const handleScroll = (event: NativeSyntheticEvent<any>) => {
         const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-        // console.log("🚀 ~ file: week-calendar.tsx:35 ~ handleScroll ~ contentOffset:", contentOffset, layoutMeasurement.width, contentSize.width)
 
         if (contentOffset.x < 10) {
             startTransiton(() => {
@@ -59,19 +56,6 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                 loadNextData(); // Функція для підгрузки даних вправо
             })
         }
-
-
-        // // Визначаємо інтервал після того, як скрол зупинився з затримкою 200 мс
-        // const handleStopScrolling = setTimeout(() => {
-        // const pageIndex = Math.floor(contentOffset.x / layoutMeasurement.width);
-        // const posAfterScroll = pageIndex * (deferredDates.length / 7);
-        // setPos(posAfterScroll);
-
-        //     // Підгрузка додаткових даних вліво або вправо
-
-        // }, 200);
-        // // Очищаємо таймаут при новому скролі
-        // clearTimeout(handleStopScrolling);
     };
 
     const loadPreviousData = ({ layoutMeasurement }: any) => {
@@ -98,7 +82,6 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
         return rooms && rooms.length !== 0 && rooms.map((room, roomIndex) => {
             const endDate = addDays(week, 1);
             const events = getEventsForRoomAndDay(room, week, endDate);
-            // console.log("🚀 ~ returnrooms&&rooms.length!==0&&rooms.map ~ events:", room.bookings)
 
             return (
                 <View key={roomIndex}>
@@ -120,8 +103,8 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                 start: new Date(events[0].start_date),
                                                 end: new Date(events[0].end_date)
                                             }) ? hexToRgba(statusesColors[events[0].status], 1) || "red" : colors.grayColor : colors.grayColor,
-                                    paddingRight: (events && events.length > 0) ? isSameDay(week, new Date(events[0].end_date)) ? 25 : 0 : 0,
-                                    paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 25 : 0 : 0,
+                                    paddingRight: (events && events.length > 0) ? isSameDay(week, new Date(events[0].end_date)) ? 22 : 0 : 0,
+                                    paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 22 : 0 : 0,
                                 }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
                                     const findedSameBookDate = room.bookings.find(({ end_date }) => end_date === event.start_date);
@@ -138,21 +121,19 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                             <View
                                                 style={{
                                                     position: isSameEndDate || isSameStartDate ? 'absolute' : 'relative',
-                                                    top: isSameEndDate || isSameStartDate ? 4.3 : 0,
-                                                    left: isSameEndDate ? 31 : 0,
+                                                    top: isSameEndDate || isSameStartDate ? 4 : 0,
+                                                    left: isSameEndDate ? 29 : 0,
                                                     bottom: 0,
                                                     zIndex: -1,
-                                                    height: '83%',
+                                                    height: isSameEndDate || isSameStartDate ? '84%' : '83%',
                                                     overflow: 'visible',
                                                     width: isSameEndDate || isSameStartDate ? '80%' : '100%',
-                                                    transform: isSameStartDate ? [{ translateX: -3 }] : [],
+                                                    transform: isSameStartDate ? [{ translateX: 0 }] : [],
                                                     borderTopRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderBottomRightRadius: isSameDay(week, new Date(event.end_date)) ? 5 : 0,
                                                     borderTopLeftRadius: isSameDay(week, new Date(event.start_date)) ? 5 : 0,
                                                     borderBottomLeftRadius: isSameDay(week, new Date(event.start_date)) ? 5 : 0,
                                                     backgroundColor: hexToRgba(statusesColors[event.status], 1) || 'red',
-                                                    // borderRightWidth: 12,
-                                                    // borderRightColor: statusesColors[event.status],
                                                 }}
                                             >
                                             </View>
@@ -168,86 +149,96 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     };
 
     const RenderWeekView = () => {
-        return <ScrollView><View style={[styles.main, { flexDirection: 'row' }]}>
-            <View>
-                <View style={{ borderRightWidth: 1, borderRightColor: colors.menuColor }}>
-                    <View style={{ opacity: 0 }}>
-                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
-                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{2023}</Text>
-                        <Text style={{ textAlign: 'center', }}>{"asda"}</Text>
-                        <Text style={{ textAlign: 'center', }}>{1}</Text>
-                    </View>
+        return (
+            <ScrollView onScroll={handleStickyScroll}>
+                <View style={[styles.main, { flexDirection: 'row' }]}>
+                    <View>
+                        <View style={{ borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomWidth: 1, borderBottomColor: colors.menuColor }}>
+                            <View style={{ opacity: 0 }}>
+                                <Text style={{ textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
+                                <Text style={{ textAlign: 'center', fontSize: 10, }}>{2023}</Text>
+                                <Text style={{ textAlign: 'center', }}>{"asda"}</Text>
+                                <Text style={{ textAlign: 'center', }}>{1}</Text>
+                            </View>
 
-                    {isLoadingRooms && (
-                        <View style={{ width: 100, marginTop: 15 }}>
-                            <ActivityIndicator animating />
-                        </View>
-                    )}
+                            {isLoadingRooms && (
+                                <View style={{ width: 100, marginTop: 15 }}>
+                                    <ActivityIndicator animating />
+                                </View>
+                            )}
 
-                    {!isLoadingRooms && !rooms && <View style={{ width: 100, marginTop: 15, padding: 10 }}>
-                        <Text>
-                            Добавте помешкання
-                        </Text>
-                    </View>}
-
-                    {/* {!isLoadingRooms && rooms && rooms.length > 0 && (
-                        <AntDesign name="filter" size={22} onPress={onOpenFilter} />
-                    )} */}
-                </View>
-                {!isLoadingRooms && (
-                    <ScrollView style={{ width: 100 }}>
-                        {rooms && rooms.length > 0 && rooms.map((room, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                style={{ flex: 1, height: 50.2, paddingLeft: 10, alignItems: 'flex-start', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor, borderTopWidth: index === 0 ? 1 : 0, borderTopColor: colors.menuColor, borderLeftColor: room.with_color ? defineBgColor(room, 1) : 'transparent', borderLeftWidth: 4 }}
-                                onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
-                                <Text style={{ fontSize: 12 }} numberOfLines={1}>
-                                    <Feather name="user" />
-                                    {room.count_room}
+                            {!isLoadingRooms && !rooms && <View style={{ width: 100, marginTop: 15, padding: 10 }}>
+                                <Text>
+                                    Добавте помешкання
                                 </Text>
-                                <Text style={{ fontSize: 12 }} numberOfLines={1}>{room.name}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                )}
-            </View>
-
-            <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                onScroll={handleScroll}
-                scrollEventThrottle={32}
-            >
-                {deferredDates.map((week, index) => (
-                    <View key={index} style={{ position: "relative" }}>
-                        <View style={[styles.row, { borderBottomWidth: 1, borderBottomColor: colors.grayColor }, isSaturday(week) || isSunday(week) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor, backgroundColor: hexToRgba(colors.grayColor, 0.1) || "" } : { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor }]}>
-                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-                                <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'MMM', { timeZone: 'Europe/Kiev' })}</Text>
-                                <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'yyyy', { timeZone: 'Europe/Kiev' })}</Text>
-                                <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'EEE', { timeZone: 'Europe/Kiev' })}</Text>
-                                <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{week.getDate()}</Text>
-                            </View>
+                            </View>}
                         </View>
-                        <RenderRoomRows week={week} />
-                        {isSameDay(week, new Date()) && (
-                            <View style={{
-                                position: 'absolute',
-                                top: 70,
-                                left: 24,
-                                bottom: 0,
-                                zIndex: -1,
-                                width: 2,
-                                // height: '90%',
-                                backgroundColor: colors.notification
-                            }}>
-                                <View style={{ position: 'absolute', right: -4, width: 10, height: 10, zIndex: -1, borderRadius: 50, backgroundColor: colors.notification }}></View>
-                            </View>
+                        {!isLoadingRooms && (
+                            <ScrollView style={{ width: 100 }}>
+                                {rooms && rooms.length > 0 && rooms.map((room, index) => (
+                                    <TouchableOpacity
+                                        key={index}
+                                        style={{ flex: 1, height: 50, paddingLeft: 10, alignItems: 'flex-start', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor, borderLeftColor: room.with_color ? defineBgColor(room, 1) : 'transparent', borderLeftWidth: 4 }}
+                                        onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
+                                        <Text style={{ fontSize: 12 }} numberOfLines={1}>
+                                            <Feather name="user" />
+                                            {room.count_room}
+                                        </Text>
+                                        <Text style={{ fontSize: 12 }} numberOfLines={1}>{room.name}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
                         )}
                     </View>
-                ))}
-            </ScrollView>
-        </View>
-        </ScrollView>
+
+                    <ScrollView
+                        ref={scrollViewRef}
+                        horizontal
+                        onScroll={handleScroll}
+                        scrollEventThrottle={32}
+                    >
+                        {deferredDates.map((week, index) => (
+                            <View key={index} style={{ position: "relative" }}>
+                                <Animated.View
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0, // Set top position to the header height
+                                        left: 0,
+                                        right: 0,
+                                        transform: [{ translateY: translateYValue }],
+                                        zIndex: 2, // Ensure it stays above the ScrollView
+                                        backgroundColor: 'white', // Set your desired background color
+                                    }}
+                                >
+                                    <View style={[styles.row, { borderBottomWidth: 1, borderBottomColor: colors.grayColor }, isSaturday(week) || isSunday(week) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor, backgroundColor: hexToRgba(colors.grayColor, 0.1) || "" } : { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor }]}>
+                                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+                                            <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'MMM', { timeZone: 'Europe/Kiev' })}</Text>
+                                            <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'yyyy', { timeZone: 'Europe/Kiev' })}</Text>
+                                            <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'EEE', { timeZone: 'Europe/Kiev' })}</Text>
+                                            <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{week.getDate()}</Text>
+                                        </View>
+                                    </View>
+                                </Animated.View>
+
+                                <View style={{ marginTop: 67 }}><RenderRoomRows week={week} /></View>
+                                {isSameDay(week, new Date()) && (
+                                    <View style={{
+                                        position: 'absolute',
+                                        top: 70,
+                                        left: 24,
+                                        bottom: 0,
+                                        zIndex: -1,
+                                        width: 2,
+                                        backgroundColor: colors.notification
+                                    }}>
+                                        <View style={{ position: 'absolute', right: -4, width: 10, height: 10, zIndex: -1, borderRadius: 50, backgroundColor: colors.notification }}></View>
+                                    </View>
+                                )}
+                            </View>
+                        ))}
+                    </ScrollView>
+                </View>
+            </ScrollView>)
     };
 
     return <View style={styles.main}>{RenderWeekView()}</View>;
@@ -323,7 +314,6 @@ const styles = StyleSheet.create({
     roomCell: {
         position: 'relative',
         height: 50,
-        // borderRightWidth: 1,
         flex: 1, // Adjust the flex value to fit the cells within the view
         alignItems: 'center',
         justifyContent: 'center',
