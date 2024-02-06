@@ -8,7 +8,7 @@ import { ActivityIndicator, Button, IconButton, RadioButton, Surface, Text, Text
 import { EventStatus, IEventEntity } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import Collapsible from "react-native-collapsible";
-import { addDays, differenceInDays, format } from "date-fns";
+import { addDays, differenceInDays, format, isValid } from "date-fns";
 import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
 import { utcToZonedTime } from "date-fns-tz";
 import Counter from "./counter";
@@ -147,11 +147,11 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                     if (event !== 'id' && event !== 'rooms_id' && event !== 'created_at' && event !== 'updated_at') {
                         if (eventData[event]) {
                             if (event === 'start_date' || event === 'end_date') {
-                                // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", new Date(eventData[event]))
                                 setFieldValue('start_date', new Date(eventData["start_date"]));
                                 setFieldValue('end_date', new Date(eventData["end_date"]));
                             } else if (event === 'down_payment_date' && eventData['down_payment_date']) {
-                                setFieldValue('down_payment_date', new Date(eventData["down_payment_date"]));
+                                const inputDate = eventData['down_payment_date'];
+                                setFieldValue('down_payment_date', String(inputDate) !== '0000-00-00' ? new Date(inputDate) : undefined);
                             }
                             else {
                                 // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", event)
@@ -384,7 +384,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         // onBlur={formik.handleBlur('email')}
                         onChangeText={handleChange('email')}
                     />
-                    <Button mode="contained" onPress={() => setExpanded(prev => !prev)}>
+                    <Button mode="contained" onPress={() => setExpanded(prev => !prev)} style={{ backgroundColor: colors.orangeColor }}>
                         Додаткова інформація:
                     </Button>
                     <Collapsible collapsed={expanded}>

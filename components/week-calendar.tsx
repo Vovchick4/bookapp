@@ -199,6 +199,14 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                     >
                         {deferredDates.map((week, index) => (
                             <View key={index} style={{ position: "relative" }}>
+                                <View style={[styles.row, { opacity: 0, borderBottomWidth: 1, borderBottomColor: colors.grayColor }, isSaturday(week) || isSunday(week) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor, backgroundColor: hexToRgba(colors.grayColor, 0.1) || "" } : { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor }]}>
+                                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+                                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
+                                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{2023}</Text>
+                                        <Text style={{ textAlign: 'center', }}>{"asda"}</Text>
+                                        <Text style={{ textAlign: 'center', }}>{1}</Text>
+                                    </View>
+                                </View>
                                 <Animated.View
                                     style={{
                                         position: 'absolute',
@@ -220,7 +228,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                     </View>
                                 </Animated.View>
 
-                                <View style={{ marginTop: 67 }}><RenderRoomRows week={week} /></View>
+                                <RenderRoomRows week={week} />
                                 {isSameDay(week, new Date()) && (
                                     <View style={{
                                         position: 'absolute',
