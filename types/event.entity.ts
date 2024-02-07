@@ -23,10 +23,17 @@ export interface IEventEntity {
     price_per_day: number
     final_price: number
     down_payment: number
-    down_payment_date: Date 
+    down_payment_date: Date
     payment_on_place: number
     notes: string,
     rooms: IRoomEntity
+    sources_id: string
+    sources?: ISources
+}
+
+export interface ISources {
+    id: string
+    name: string
 }
 
 export enum EventStatus {

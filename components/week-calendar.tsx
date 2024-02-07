@@ -2,7 +2,7 @@ import { format, utcToZonedTime } from "date-fns-tz";
 import { ActivityIndicator } from "react-native-paper";
 import { Feather } from "@expo/vector-icons";
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
-import { addDays, addMonths, eachDayOfInterval, isSameDay, isSaturday, isSunday, isWithinInterval } from "date-fns";
+import { addDays, addMonths, differenceInDays, eachDayOfInterval, isSameDay, isSaturday, isSunday, isWithinInterval } from "date-fns";
 import { Animated, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import hexToRgba from "../utils/hex-to-rgba";
@@ -136,6 +136,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                     backgroundColor: hexToRgba(statusesColors[event.status], 1) || 'red',
                                                 }}
                                             >
+                                                {event.sources && <RenderSource name={event.sources?.name || ""} week={week} event_dates={{ start: new Date(event.start_date), end: new Date(event.end_date) }} />}
                                             </View>
                                         </TouchableNativeFeedback>
                                     )
@@ -250,6 +251,37 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     };
 
     return <View style={styles.main}>{RenderWeekView()}</View>;
+}
+
+const RenderSource = ({ name, week, event_dates: { start, end } }: { name: string, week: Date, event_dates: { start: Date, end: Date } }) => {
+    const diff = differenceInDays(end, start);
+
+    return (
+        diff <= 1 ? (
+            isWithinInterval(week, { start: new Date(start), end: new Date(end) }) &&
+            <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff, pointerEvents: 'none' }}>
+                <View style={{ width: 30, height: 30, borderRadius: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text numberOfLines={2} style={{ fontSize: 11 }}>{name}</Text>
+                </View>
+            </View>
+        ) : diff === 2 ? (
+            isWithinInterval(week, { start: addDays(new Date(start), 1), end: new Date(end) }) && (
+                <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff, pointerEvents: 'none' }}>
+                    <View style={{ width: 30, height: 30, borderRadius: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
+                        <Text numberOfLines={2} style={{ fontSize: 11 }}>{name}</Text>
+                    </View>
+                </View>
+            )
+        ) : (
+            isWithinInterval(week, { start: addDays(new Date(start), diff - 1), end: new Date(end) }) && (
+                <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff, pointerEvents: 'none' }}>
+                    <View style={{ width: 30, height: 30, borderRadius: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
+                        <Text numberOfLines={2} style={{ fontSize: 11 }}>{name}</Text>
+                    </View>
+                </View>
+            )
+        )
+    )
 }
 
 const getEventsForRoomAndDay = (room: IRoomEntity, startDate: Date, endDate: Date) => {

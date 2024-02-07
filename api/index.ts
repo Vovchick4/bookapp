@@ -41,6 +41,11 @@ export const createCompany = async (data: TCreateCompanyPayload) => {
     return (await axios.post('/company/create', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
 
+// Sources
+export const getSources = async () => {
+    return (await axios.get('/sources/get')).data;
+}
+
 // Calendar api
 export const getRooms = async () => {
     return (await axios.get('/calendar/get-rooms')).data

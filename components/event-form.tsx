@@ -11,6 +11,7 @@ import { addDays, differenceInDays, format } from "date-fns";
 import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
 import { utcToZonedTime } from "date-fns-tz";
 import Counter from "./counter";
+import useGetMutateSources from "../hooks/use-get-mutate-sources";
 
 interface Props {
     mode?: string;
@@ -50,12 +51,14 @@ interface Values {
     country: string;
     post_code: string;
     passport: string;
+    sources_id: string;
 }
 
 const dropStates = {
-    parent: 'parent',
-    children: 'children',
     room: 'room',
+    parent: 'parent',
+    source: 'source',
+    children: 'children',
 }
 
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + 1 + "", value: index + 1 }));
@@ -85,7 +88,8 @@ const initialValues: Values = {
     down_payment_date: undefined,
     payment_on_place: 0,
     notes: '',
-    room_id: -1
+    room_id: -1,
+    sources_id: ''
 }
 
 const pickModalTypes = {
@@ -105,6 +109,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
         initialValues,
         onSubmit
     });
+    const { data, isLoading } = useGetMutateSources();
     const { data: roomsNames, isLoading: isLoadingRoomsNames } = useGetQueryRoomsNames({ mode: mode || '' });
 
     const eventStatuses = useMemo(() => ([
@@ -280,7 +285,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
 
     return (
         <Fragment>
-            <View style={{ flex: 1, rowGap: 10, padding: 10 }}>
+            <View style={{ flex: 1, rowGap: 10, paddingHorizontal: 10, paddingTop: 10, paddingBottom: 50 }}>
                 <Surface style={{ elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
                     <DatePickerInput
                         mode="outlined"
@@ -472,6 +477,23 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     value={String(values.notes)}
                     onChangeText={handleChange('notes')}
                 />
+
+                {isLoading && <ActivityIndicator animating />}
+                {!isLoading && <DropDown
+                    dropDownStyle={{ bottom: -100 }}
+                    dropDownContainerMaxHeight={100}
+                    mode="outlined"
+                    label={isLoading ? "Підгрузка походжень..." : "Походження:"}
+                    list={data && data?.length > 0 ? data.map(({ id, name }) => ({ label: name, value: String(id) })) : [{ value: '', label: '' }]}
+                    value={String(values.sources_id)}
+                    activeColor={colors.orangeColor}
+                    setValue={(value) => setFieldValue('sources_id', String(value))}
+                    visible={dropStates.source === dropsListState}
+                    showDropDown={() => {
+                        setDropsListState(dropStates.source);
+                    }}
+                    onDismiss={() => setDropsListState(null)}
+                />}
             </View>
         </Fragment>
     )
