@@ -1,20 +1,20 @@
 import { useFormik } from "formik";
-import { Alert, StatusBar, View } from "react-native";
+import { Alert, View } from "react-native";
 import DropDown from "react-native-paper-dropdown";
-import { DatePickerInput } from 'react-native-paper-dates';
-import { useFocusEffect, useIsFocused, useNavigation } from "@react-navigation/native";
+import { DatePickerInput, TimePickerModal } from 'react-native-paper-dates';
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, IconButton, RadioButton, Surface, Text, TextInput } from "react-native-paper";
 import { EventStatus, IEventEntity } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
-import Collapsible from "react-native-collapsible";
-import { addDays, differenceInDays, format, isValid } from "date-fns";
+import { addDays, differenceInDays, format } from "date-fns";
 import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
 import { utcToZonedTime } from "date-fns-tz";
 import Counter from "./counter";
 
 interface Props {
     mode?: string;
+    bookId?: string;
     is_room_vis: boolean;
     start_date: Date | undefined;
     room_id: number;
@@ -27,6 +27,8 @@ interface Props {
 interface Values {
     start_date: Date | undefined;
     end_date: Date | undefined;
+    time_arrival: Date | undefined;
+    time_departure: Date | undefined;
     parents: number;
     childrens: number;
     status: EventStatus;
@@ -61,6 +63,8 @@ const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index 
 const initialValues: Values = {
     start_date: undefined,
     end_date: undefined,
+    time_arrival: undefined,
+    time_departure: undefined,
     parents: 0,
     childrens: 0,
     status: EventStatus.nopaid,
@@ -84,14 +88,19 @@ const initialValues: Values = {
     room_id: -1
 }
 
+const pickModalTypes = {
+    TA: "TA",
+    TD: "TD"
+}
+
 // Define your target time zone (e.g., 'Europe/Kiev')
 const targetTimeZone = 'Europe/Kiev';
 
-export default function EventForm({ mode, start_date, room_id, is_room_vis, eventData, onSubmit, deleteEvent }: Props) {
+export default function EventForm({ mode, start_date, bookId, room_id, is_room_vis, eventData, onSubmit, deleteEvent }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
-    const [expanded, setExpanded] = useState(true);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
+    const [visible, setVisible] = useState<string | null>(null)
     const { values, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
         initialValues,
         onSubmit
@@ -130,6 +139,8 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
 
     useFocusEffect(
         useCallback(() => {
+            console.log(bookId);
+
             if (room_id) {
                 setFieldValue('room_id', room_id);
             }
@@ -141,7 +152,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                 setFieldValue('start_date', new Date(startDateInTargetZone));
             }
 
-            if (eventData && mode === 'update') {
+            if (eventData && mode === 'update' && bookId !== undefined) {
                 // console.log("🚀 ~ file: event-form.tsx:132 ~ useCallback ~ eventData:", eventData)
                 Object.keys(eventData).forEach((event) => {
                     if (event !== 'id' && event !== 'rooms_id' && event !== 'created_at' && event !== 'updated_at') {
@@ -165,7 +176,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
             return () => {
                 resetForm({ values: initialValues });
             }
-        }, [mode, eventData, room_id, start_date])
+        }, [mode, eventData, room_id, start_date, bookId])
     );
 
     useEffect(() => {
@@ -174,7 +185,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
             },
-            title: values.name ? values.name : "Book",
+            title: "Book",
             headerRight: () => (
                 <View style={{ flexDirection: 'row' }}>
                     <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
@@ -205,7 +216,7 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                 }} />
             ),
         });
-    }, [values.name, values.status])
+    }, [values.status])
 
     // Inside your component
 
@@ -259,6 +270,14 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
         [setFieldValue]
     );
 
+    const onShow = (type: string) => {
+        setVisible(type);
+    }
+
+    const onDismiss = () => {
+        setVisible(null);
+    }
+
     return (
         <Fragment>
             <View style={{ flex: 1, rowGap: 10, padding: 10 }}>
@@ -280,6 +299,32 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         onChange={(value) => setFieldValue('end_date', value)}
                         defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
                     />
+                    <View style={{ marginTop: 15, flex: 1, alignItems: 'center' }}>
+                        <Button style={{ width: "100%" }} textColor={colors.surface} buttonColor={colors.orangeColor} onPress={() => onShow(pickModalTypes.TA)} uppercase={false} mode="outlined">
+                            Час при'їзду  {values.time_arrival ? values.time_arrival?.toString() : '(невказано)'}
+                        </Button>
+                        <TimePickerModal
+                            visible={pickModalTypes.TA === visible}
+                            onDismiss={onDismiss}
+                            onConfirm={({ hours, minutes }) => {
+                                setVisible(null);
+                                setFieldValue("time_arrival", `${hours}:${minutes}`);
+                            }}
+                        />
+                    </View>
+                    <View style={{ marginTop: 15, flex: 1, alignItems: 'center' }}>
+                        <Button style={{ width: "100%" }} textColor={colors.surface} buttonColor={colors.orangeColor} onPress={() => onShow(pickModalTypes.TD)} uppercase={false} mode="outlined">
+                            Час від'їзду {values.time_departure ? values.time_departure?.toString() : '(невказано)'}
+                        </Button>
+                        <TimePickerModal
+                            visible={pickModalTypes.TD === visible}
+                            onDismiss={onDismiss}
+                            onConfirm={({ hours, minutes }) => {
+                                setVisible(null);
+                                setFieldValue("time_departure", `${hours}:${minutes}`);
+                            }}
+                        />
+                    </View>
                     <Counter
                         count={values.start_date && values.end_date ? differenceInDays(values.start_date || new Date(), values.end_date || new Date()) : 0}
                         onPress={(type) => {
@@ -374,81 +419,6 @@ export default function EventForm({ mode, start_date, room_id, is_room_vis, even
                         // onBlur={formik.handleBlur('email')}
                         onChangeText={handleChange('passport')}
                     />
-                    <TextInput
-                        activeOutlineColor={colors.orangeColor}
-                        mode="outlined"
-                        label="Email"
-                        // error={!!formik.errors.email}
-                        autoComplete="email"
-                        value={values.email}
-                        // onBlur={formik.handleBlur('email')}
-                        onChangeText={handleChange('email')}
-                    />
-                    <Button mode="contained" onPress={() => setExpanded(prev => !prev)} style={{ backgroundColor: colors.orangeColor }}>
-                        Додаткова інформація:
-                    </Button>
-                    <Collapsible collapsed={expanded}>
-                        <View>
-                            <TextInput
-                                activeOutlineColor={colors.orangeColor}
-                                mode="outlined"
-                                label="Street"
-                                // error={!!formik.errors.email}
-                                autoComplete="address-line1"
-                                value={values.street}
-                                // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('street')}
-                            />
-                            <TextInput
-                                activeOutlineColor={colors.orangeColor}
-                                mode="outlined"
-                                label="House number"
-                                // error={!!formik.errors.email}
-                                autoComplete="address-line2"
-                                value={values.house_number}
-                                // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('house_number')}
-                            />
-                            <TextInput
-                                activeOutlineColor={colors.orangeColor}
-                                mode="outlined"
-                                label="Apartment number"
-                                // error={!!formik.errors.email}
-                                autoComplete="address-line2"
-                                value={values.apartment_number}
-                                // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('apartment_number')}
-                            />
-                            <TextInput
-                                activeOutlineColor={colors.orangeColor}
-                                mode="outlined"
-                                label="City"
-                                // error={!!formik.errors.email}
-                                value={values.city}
-                                // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('city')}
-                            />
-                            <TextInput
-                                activeOutlineColor={colors.orangeColor}
-                                mode="outlined"
-                                label="Country"
-                                // error={!!formik.errors.email}
-                                value={values.country}
-                                // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('country')}
-                            />
-                            <TextInput
-                                activeOutlineColor={colors.orangeColor}
-                                mode="outlined"
-                                label="Post code"
-                                // error={!!formik.errors.email}
-                                value={values.post_code}
-                                // onBlur={formik.handleBlur('email')}
-                                onChangeText={handleChange('post_code')}
-                            />
-
-                        </View>
-                    </Collapsible>
                 </Surface>
                 <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
                     <Text>Калькулятор ціни:</Text>

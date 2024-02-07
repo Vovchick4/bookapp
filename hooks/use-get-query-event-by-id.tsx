@@ -3,7 +3,7 @@ import { getBookById } from "../api";
 
 export default function useGetQueryEventById({ bookId, mode }: { bookId: number | string, mode: string }) {
     return useQuery({
-        queryKey: ["get-book-by-id"],
+        queryKey: ["get-book-by-id", bookId],
         queryFn: async () => {
             try {
                 return (await getBookById(bookId)).data;
@@ -11,7 +11,7 @@ export default function useGetQueryEventById({ bookId, mode }: { bookId: number 
                 throw (error as any).response?.data || { message: 'An error occurred' };
             }
         },
-        enabled: mode === 'update',
+        enabled: mode === 'update' && bookId !== undefined,
         refetchOnWindowFocus: true,
         refetchOnReconnect: true
     })
