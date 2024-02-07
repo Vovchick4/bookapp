@@ -11,80 +11,7 @@ import { EventStatus } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
 
-interface IMarkedDates {
-    [date: string]: {
-        periods?: {
-            startingDay?: boolean;
-            endingDay?: boolean;
-            color: string;
-        }[];
-    };
-}
-
 const WeekCalendar = lazy(() => import('../components/week-calendar'))
-
-const calculateMarkedDates = (rooms: IRoomEntity[], statusesColors: TSatusColors): IMarkedDates => {
-    const markedDates: IMarkedDates = {};
-    rooms.forEach((room: IRoomEntity) => {
-        room.bookings.forEach((booking) => {
-            const startDate = new Date(booking.start_date);
-            const endDate = new Date(booking.end_date);
-
-            const formattedStartDate = startDate.toISOString().split('T')[0];
-            const formattedEndDate = endDate.toISOString().split('T')[0];
-
-            if (!markedDates[formattedStartDate]) {
-                markedDates[formattedStartDate] = {};
-            }
-
-            if (!markedDates[formattedStartDate].periods) {
-                markedDates[formattedStartDate].periods = [];
-            }
-
-            markedDates[formattedStartDate].periods?.push({
-                startingDay: true,
-                endingDay: true,
-                color: statusesColors[booking.status],
-            });
-
-            if (formattedStartDate !== formattedEndDate) {
-                if (!markedDates[formattedEndDate]) {
-                    markedDates[formattedEndDate] = {};
-                }
-
-                if (!markedDates[formattedEndDate].periods) {
-                    markedDates[formattedEndDate].periods = [];
-                }
-
-                markedDates[formattedEndDate].periods?.push({
-                    endingDay: true,
-                    color: statusesColors[booking.status],
-                });
-
-                let currentDate = new Date(startDate);
-                currentDate.setDate(currentDate.getDate() + 1);
-
-                while (currentDate.toISOString().split('T')[0] !== formattedEndDate) {
-                    const formattedDate = currentDate.toISOString().split('T')[0];
-                    if (!markedDates[formattedDate]) {
-                        markedDates[formattedDate] = {};
-                    }
-
-                    if (!markedDates[formattedDate].periods) {
-                        markedDates[formattedDate].periods = [];
-                    }
-
-                    markedDates[formattedDate].periods?.push({
-                        color: statusesColors[booking.status],
-                    });
-
-                    currentDate.setDate(currentDate.getDate() + 1);
-                }
-            }
-        });
-    });
-    return markedDates;
-};
 
 const Modal_States = {
     fab: "fab",
@@ -108,12 +35,6 @@ export default function Home({ navigation: { navigate } }: any) {
         [EventStatus.nopaid]: colors.statusNoPaid,
         [EventStatus.canceled]: colors.statusCanceled,
     }), [])
-
-    const markedDates = useMemo(() => {
-        if (data && data?.length > 0) {
-            return calculateMarkedDates(data, statusesColors);
-        }
-    }, [data])
 
     useFocusEffect(
         useCallback(() => {
@@ -142,7 +63,7 @@ export default function Home({ navigation: { navigate } }: any) {
                             horizontal={calendarViewType === ECalendarViewType.week}
                             monthFormat={'MMMM yyyy'}
                             hideExtraDays={true}
-                            firstDay={1}
+                            firstDay={4}
                             current={date.toString()}
                             theme={{
                                 calendarBackground: colors.surface,
@@ -155,8 +76,6 @@ export default function Home({ navigation: { navigate } }: any) {
                                 selectedDayBackgroundColor: colors.menuColor,
                                 // Add more custom styles as needed
                             }}
-                            markingType="multi-period"
-                            markedDates={markedDates}
                             // Handle onDayPress or other calendar callbacks as needed
                             onDayPress={(day) => setDate(new Date(day.dateString))}
                         />
