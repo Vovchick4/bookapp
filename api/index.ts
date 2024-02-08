@@ -46,6 +46,10 @@ export const getSources = async () => {
     return (await axios.get('/sources/get')).data;
 }
 
+export const createSource = async (data: { name: string }) => {
+    return (await axios.post('/sources/create', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
+}
+
 // Calendar api
 export const getRooms = async () => {
     return (await axios.get('/calendar/get-rooms')).data

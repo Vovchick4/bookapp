@@ -34,6 +34,9 @@ export interface IEventEntity {
 export interface ISources {
     id: string
     name: string
+    icon: {
+        path: string
+    }
 }
 
 export enum EventStatus {

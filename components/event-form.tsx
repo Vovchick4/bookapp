@@ -1,17 +1,21 @@
 import { useFormik } from "formik";
-import { Alert, View } from "react-native";
+import { Alert, TouchableOpacity, View } from "react-native";
+import { utcToZonedTime } from "date-fns-tz";
 import DropDown from "react-native-paper-dropdown";
+import { MaterialIcons } from "@expo/vector-icons";
+import DialogInput from 'react-native-dialog-input';
+import { addDays, differenceInDays, format } from "date-fns";
 import { DatePickerInput, TimePickerModal } from 'react-native-paper-dates';
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Button, IconButton, RadioButton, Surface, Text, TextInput } from "react-native-paper";
-import { EventStatus, IEventEntity } from "../types/event.entity";
-import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
-import { addDays, differenceInDays, format } from "date-fns";
-import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
-import { utcToZonedTime } from "date-fns-tz";
+
 import Counter from "./counter";
+import { EventStatus, IEventEntity } from "../types/event.entity";
 import useGetMutateSources from "../hooks/use-get-mutate-sources";
+import useCreateSourceMutate from "../hooks/use-create-source-mutate";
+import useGetQueryRoomsNames from "../hooks/use-get-query-rooms-names";
+import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 interface Props {
     mode?: string;
@@ -51,7 +55,7 @@ interface Values {
     country: string;
     post_code: string;
     passport: string;
-    sources_id: string;
+    sources_id: number;
 }
 
 const dropStates = {
@@ -59,6 +63,7 @@ const dropStates = {
     parent: 'parent',
     source: 'source',
     children: 'children',
+    add_sources: 'add_sources',
 }
 
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + 1 + "", value: index + 1 }));
@@ -89,7 +94,7 @@ const initialValues: Values = {
     payment_on_place: 0,
     notes: '',
     room_id: -1,
-    sources_id: ''
+    sources_id: 0
 }
 
 const pickModalTypes = {
@@ -103,6 +108,8 @@ const targetTimeZone = 'Europe/Kiev';
 export default function EventForm({ mode, start_date, bookId, room_id, is_room_vis, eventData, onSubmit, deleteEvent }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
+    const [sourceName, setSourceName] = useState('');
+    const [isDialogVisible, setDialogVisible] = useState(false);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
     const [visible, setVisible] = useState<string | null>(null)
     const { values, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
@@ -110,6 +117,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
         onSubmit
     });
     const { data, isLoading } = useGetMutateSources();
+    const { mutate, isPending: isLoadingCreateSoruce } = useCreateSourceMutate();
     const { data: roomsNames, isLoading: isLoadingRoomsNames } = useGetQueryRoomsNames({ mode: mode || '' });
 
     const eventStatuses = useMemo(() => ([
@@ -144,8 +152,6 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
 
     useFocusEffect(
         useCallback(() => {
-            console.log(bookId);
-
             if (room_id) {
                 setFieldValue('room_id', room_id);
             }
@@ -283,6 +289,19 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
         setVisible(null);
     }
 
+    const showDialog = () => {
+        setDialogVisible(true);
+    };
+
+    const handleCancel = () => {
+        setDialogVisible(false);
+    };
+
+    const handleSubmitPromt = (value: string) => {
+        mutate({ name: value });
+        setDialogVisible(false);
+    };
+
     return (
         <Fragment>
             <View style={{ flex: 1, rowGap: 10, paddingHorizontal: 10, paddingTop: 10, paddingBottom: 50 }}>
@@ -363,6 +382,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         onDismiss={() => setDropsListState(null)}
                     />
                 )}
+
                 <DropDown
                     mode="outlined"
                     label="Дорослі:"
@@ -399,41 +419,52 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
                         label="Name"
-                        // error={!!formik.errors.email}
                         autoComplete="name"
                         value={values.name}
-                        // onBlur={formik.handleBlur('email')}
                         onChangeText={handleChange('name')}
                     />
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
                         label="Phone"
-                        // error={!!formik.errors.email}
                         autoComplete="tel"
                         value={values.phone}
-                        // onBlur={formik.handleBlur('email')}
                         onChangeText={handleChange('phone')}
                     />
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
                         label="Passport"
-                        // error={!!formik.errors.email}
                         value={values.passport}
-                        // onBlur={formik.handleBlur('email')}
                         onChangeText={handleChange('passport')}
                     />
+
+                    {(isLoading || isLoadingCreateSoruce) && <ActivityIndicator animating />}
+                    <View style={{ position: 'relative' }}>
+                        {!isLoading && !isLoadingCreateSoruce && data && data?.length > 0 && (
+                            <>
+                                <DropDown
+                                    mode="outlined"
+                                    label="Походження:"
+                                    list={data}
+                                    value={values.sources_id}
+                                    activeColor={colors.orangeColor}
+                                    setValue={(value) => setFieldValue('sources_id', Number(value))}
+                                    visible={dropStates.source === dropsListState}
+                                    showDropDown={() => setDropsListState(dropStates.source)}
+                                    onDismiss={() => setDropsListState(null)}
+                                />
+                                <View style={{ position: 'absolute', top: '50%', right: 20, transform: [{ translateY: -10 }], flexDirection: 'row', columnGap: 10 }}>
+                                    <TouchableOpacity onPress={showDialog}>
+                                        <MaterialIcons name="edit" size={22} />
+                                    </TouchableOpacity>
+                                </View>
+                            </>
+                        )}
+                    </View>
                 </Surface>
                 <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
                     <Text>Калькулятор ціни:</Text>
-                    {/* <TextInput
-                        activeOutlineColor={colors.orangeColor}
-                        mode="outlined"
-                        label="Ціна за людину"
-                        value={String(values.price_per_person)}
-                        onChangeText={handleChange('price_per_person')}
-                    /> */}
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
@@ -477,24 +508,22 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     value={String(values.notes)}
                     onChangeText={handleChange('notes')}
                 />
-
-                {isLoading && <ActivityIndicator animating />}
-                {!isLoading && <DropDown
-                    dropDownStyle={{ bottom: -100 }}
-                    dropDownContainerMaxHeight={100}
-                    mode="outlined"
-                    label={isLoading ? "Підгрузка походжень..." : "Походження:"}
-                    list={data && data?.length > 0 ? data.map(({ id, name }) => ({ label: name, value: String(id) })) : [{ value: '', label: '' }]}
-                    value={String(values.sources_id)}
-                    activeColor={colors.orangeColor}
-                    setValue={(value) => setFieldValue('sources_id', String(value))}
-                    visible={dropStates.source === dropsListState}
-                    showDropDown={() => {
-                        setDropsListState(dropStates.source);
-                    }}
-                    onDismiss={() => setDropsListState(null)}
-                />}
             </View>
+
+            <DialogInput
+                isDialogVisible={isDialogVisible}
+                title={'Enter Text'}
+                message={'Please enter your text:'}
+                hintInput={'Type here...'}
+                submitInput={handleSubmitPromt}
+                closeDialog={handleCancel}
+            >
+                <TextInput
+                    value={sourceName}
+                    onChangeText={(text) => setSourceName(text)}
+                    autoFocus={true}
+                />
+            </DialogInput>
         </Fragment>
     )
 }

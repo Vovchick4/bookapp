@@ -3,7 +3,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { Feather } from "@expo/vector-icons";
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { addDays, addMonths, differenceInDays, eachDayOfInterval, isSameDay, isSaturday, isSunday, isWithinInterval } from "date-fns";
-import { Animated, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
+import { Animated, Image, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
@@ -136,7 +136,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                                     backgroundColor: hexToRgba(statusesColors[event.status], 1) || 'red',
                                                 }}
                                             >
-                                                {event.sources && <RenderSource name={event.sources?.name || ""} week={week} event_dates={{ start: new Date(event.start_date), end: new Date(event.end_date) }} />}
+                                                {event.sources && <RenderSource name={event.sources?.name || ""} icon={event.sources.icon || { path: null }} week={week} event_dates={{ start: new Date(event.start_date), end: new Date(event.end_date) }} isLeftDate={isSameStartDate} />}
                                             </View>
                                         </TouchableNativeFeedback>
                                     )
@@ -253,33 +253,42 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     return <View style={styles.main}>{RenderWeekView()}</View>;
 }
 
-const RenderSource = ({ name, week, event_dates: { start, end } }: { name: string, week: Date, event_dates: { start: Date, end: Date } }) => {
+const RenderSource = ({ name, icon, week, event_dates: { start, end }, isLeftDate }: { name: string, icon: { path: string }, week: Date, event_dates: { start: Date, end: Date }, isLeftDate: boolean | undefined }) => {
     const diff = differenceInDays(end, start);
 
     return (
         diff <= 1 ? (
             isWithinInterval(week, { start: new Date(start), end: new Date(end) }) &&
-            <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff, pointerEvents: 'none' }}>
-                <View style={{ width: 30, height: 30, borderRadius: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text numberOfLines={2} style={{ fontSize: 11 }}>{name}</Text>
-                </View>
+            <View style={{ position: 'absolute', top: 5, right: 2, width: !isLeftDate ? 50 * diff - 5 : 50 * diff - 15, pointerEvents: 'none' }}>
+                <RenderSourcePromt name={name} icon={icon} />
             </View>
         ) : diff === 2 ? (
             isWithinInterval(week, { start: addDays(new Date(start), 1), end: new Date(end) }) && (
-                <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff, pointerEvents: 'none' }}>
-                    <View style={{ width: 30, height: 30, borderRadius: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                        <Text numberOfLines={2} style={{ fontSize: 11 }}>{name}</Text>
-                    </View>
+                <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff - 5, pointerEvents: 'none' }}>
+                    <RenderSourcePromt name={name} icon={icon} />
                 </View>
             )
         ) : (
             isWithinInterval(week, { start: addDays(new Date(start), diff - 1), end: new Date(end) }) && (
-                <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff, pointerEvents: 'none' }}>
-                    <View style={{ width: 30, height: 30, borderRadius: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                        <Text numberOfLines={2} style={{ fontSize: 11 }}>{name}</Text>
-                    </View>
+                <View style={{ position: 'absolute', top: 5, right: 2, width: 50 * diff - 5, pointerEvents: 'none' }}>
+                    <RenderSourcePromt name={name} icon={icon} />
                 </View>
             )
+        )
+    )
+}
+
+const RenderSourcePromt = ({ name = "", icon }: { name: string, icon: { path: string | null } }) => {
+    return (
+        icon.path ? (
+            <Image
+                style={{ width: 30, height: 30, borderRadius: 50, resizeMode: 'contain' }}
+                source={{ uri: icon.path }}
+            />
+        ) : (
+            <View style={{ width: 30, height: 30, borderRadius: 50, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
+                <Text numberOfLines={1} style={{ fontSize: 9 }}>{name}</Text>
+            </View>
         )
     )
 }
