@@ -32,6 +32,7 @@ export default function Employee() {
                 <Collapsible collapsed={!!employeeId}>
                     <Button
                         mode="outlined"
+                        textColor={colors.orangeColor}
                         loading={isLoading || isRefetching || isPendingDeleteEmployee}
                         disabled={isLoading || isRefetching || isPendingDeleteEmployee}
                         icon="account-multiple-plus-outline"
@@ -58,7 +59,7 @@ export default function Employee() {
                                         borderRadius: 5,
                                     }}
                                 >
-                                    <FontAwesome name="user-circle-o" size={50} color={colors.primary} />
+                                    <FontAwesome name="user-circle-o" size={50} color={colors.orangeColor} />
                                     <View>
                                         <Text numberOfLines={1}>{dt.name}</Text>
                                         <Text numberOfLines={1}>{dt.email}</Text>
@@ -72,7 +73,7 @@ export default function Employee() {
                                                     setEmployeeId(dt.id);
                                                 }}
                                             >
-                                                <AntDesign name="edit" size={22} />
+                                                <AntDesign name="edit" size={22} color={colors.orangeColor} />
                                             </Button>
                                             <Button
                                                 mode='outlined'
@@ -94,7 +95,7 @@ export default function Employee() {
                                                     )
                                                 }}
                                             >
-                                                <AntDesign name="delete" size={22} />
+                                                <AntDesign name="delete" size={22} color={colors.orangeColor} />
                                             </Button>
                                         </View>
                                     </View>

@@ -203,6 +203,7 @@ export default function ProfileRoute() {
                     )}
                 style={[{ borderRadius: 15 }]}
                 mode="outlined"
+                textColor={colors.surface}
                 buttonColor={colors.orangeColor}
                 onPress={formik.handleSubmit}
             >

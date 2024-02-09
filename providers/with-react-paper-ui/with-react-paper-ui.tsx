@@ -15,7 +15,7 @@ const theme = {
         menuColor: '#3F5F5A',
         orangeColor: '#ED8B26',
         grayColor: "#91918F",
-        statusPaid: '#80FF80',
+        statusPaid: '#018235',
         statusPending: "#e5e533",
         statusNoPaid: '#FF6666',
         statusCanceled: '#808080',

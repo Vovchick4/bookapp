@@ -166,6 +166,7 @@ export default function CopmanyRoute() {
                 disabled={isPending || isEqual<any, Pick<ICompanyEntity, 'name'>>(pickFields<any>(user?.company, ["name", "city", "post_code", "address", "web_site", "currency"]), formik.values)}
                 style={[{ borderRadius: 15 }]}
                 mode="outlined"
+                textColor={colors.surface}
                 buttonColor={colors.orangeColor}
                 onPress={formik.handleSubmit}
             >

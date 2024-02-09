@@ -125,6 +125,7 @@ export default function EmployeeForm({ isMutating, activeId, editData, onSubmit,
                     mode='outlined'
                     loading={isMutating}
                     disabled={isMutating}
+                    textColor={colors.orangeColor}
                     onPress={() => onEmployeeIdChange(null)}
                 >
                     Відміна
@@ -133,6 +134,7 @@ export default function EmployeeForm({ isMutating, activeId, editData, onSubmit,
                     mode='outlined'
                     loading={isMutating}
                     disabled={isMutating}
+                    textColor={colors.orangeColor}
                     onPress={formik.handleSubmit}
                 >
                     Зберегти
