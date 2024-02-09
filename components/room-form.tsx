@@ -7,7 +7,6 @@ import { Button, Checkbox, Icon, IconButton, Modal, Portal, Text, TextInput } fr
 
 import { IRoomEntity } from "../types/room.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
-import defineBgColor from "../utils/define-bg-color";
 import hexToRgba from "../utils/hex-to-rgba";
 
 interface Props {
@@ -46,10 +45,10 @@ const roomTypes: DropDownPropsInterface['list'] = [{
 const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + "", value: index }));
 
 const roomColors = [
-    "#000000", "#494754", "#4a5448", "#785a71", "#444444",
-    "#07f78f", "#838388", "#494d33", "#402229", "#e009ce",
-    "#61ab8d", "#06355e", "#090224", "#3802fa", "#e05712",
-    "#9de310", "#FF0000", "#00FF00", "#0000FF", "#FFFF00"
+    "#BA6A6C", "#80B492", "#AF9DC0", "#BEBA80", "#A2A2A2",
+    "#2E2E2E", "#CC0129", "#CCB300", "#018235", "#6E9A3B",
+    "#A301CB", "#C5342A", "#1A78C2", "#0098AD", "#01776C",
+    "#3E8E41", "#CB7A02", "#5E4438", "#7E7E7E", "#4D6471"
 ];
 
 const initialValues = {
@@ -203,7 +202,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                     onPress={() => setFieldValue('with_color', !values.with_color)}
                 />
                 {values.with_color && <Button
-                    style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: values.color, opacity: 0.7, }}
+                    style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: values.color, opacity: 1, }}
                     children={undefined}
                     onPress={() => setVisible(true)}
                 />}
@@ -218,7 +217,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                                 key={color}
                                 children={undefined}
                                 onPress={() => { setFieldValue('color', color); setVisible(false); }}
-                                style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: color, opacity: 0.7, borderWidth: color === values.color ? 2 : 0, borderColor: 'red' }}
+                                style={{ width: 34, height: 34, borderRadius: 50, backgroundColor: color, opacity: 1, borderWidth: color === values.color ? 2 : 0, borderColor: 'red' }}
                             />
                         ))}
                     </View>

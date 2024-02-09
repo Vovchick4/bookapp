@@ -24,7 +24,7 @@ const kievTimeZone = 'Europe/Kiev';
 
 export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, statusesColors, onOpenFilter }: Props) {
     const { colors } = useAppTheme();
-    const { calendarViewType, onChangeInterval } = useCalendar();
+    const { currentInterval, calendarViewType, onChangeInterval } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
     const deferredDates = useDeferredValue(displayedDates);
     const scrollViewRef = useRef<ScrollView | null>(null);
@@ -160,6 +160,10 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                 <Text style={{ textAlign: 'center', fontSize: 10, }}>{2023}</Text>
                                 <Text style={{ textAlign: 'center', }}>{"asda"}</Text>
                                 <Text style={{ textAlign: 'center', }}>{1}</Text>
+                            </View>
+
+                            <View style={{ position: 'absolute', top: 22, left: 10 }}>
+                                <Text style={{ color: colors.onSurface, }}>{currentInterval}</Text>
                             </View>
 
                             {isLoadingRooms && (

@@ -8,7 +8,7 @@ import { addDays, differenceInDays, format } from "date-fns";
 import { DatePickerInput, TimePickerModal } from 'react-native-paper-dates';
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Button, IconButton, RadioButton, Surface, Text, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button, IconButton, Menu, RadioButton, Surface, Text, TextInput } from "react-native-paper";
 
 import Counter from "./counter";
 import { EventStatus, IEventEntity } from "../types/event.entity";
@@ -161,6 +161,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                 selectedDate.setHours(0, 0, 0, 0);
                 const startDateInTargetZone = format(utcToZonedTime(selectedDate, targetTimeZone), 'yyyy-MM-dd');
                 setFieldValue('start_date', new Date(startDateInTargetZone));
+                setFieldValue('sources_id', 0);
             }
 
             if (eventData && mode === 'update' && bookId !== undefined) {
@@ -443,20 +444,30 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     <View style={{ position: 'relative' }}>
                         {!isLoading && !isLoadingCreateSoruce && data && data?.length > 0 && (
                             <>
-                                <DropDown
-                                    mode="outlined"
-                                    label="Походження:"
-                                    list={data}
-                                    value={values.sources_id}
-                                    activeColor={colors.orangeColor}
-                                    setValue={(value) => setFieldValue('sources_id', Number(value))}
-                                    visible={dropStates.source === dropsListState}
-                                    showDropDown={() => setDropsListState(dropStates.source)}
-                                    onDismiss={() => setDropsListState(null)}
-                                />
+                                <View>
+                                    <Menu
+                                        visible={dropStates.source === dropsListState}
+                                        onDismiss={() => setDropsListState(null)}
+                                        anchor={<Button contentStyle={{ justifyContent: "flex-start" }} mode="outlined" onPress={() => setDropsListState(dropStates.source)}>{values.sources_id !== 0 ? data.find(({ value }) => Number(value) === values.sources_id)?.label : 'Походження:'}</Button>}
+                                    >
+                                        {data.map((item) => (
+                                            <Menu.Item
+                                                key={item.value}
+                                                title={item.label}
+                                                onPress={() => {
+                                                    setFieldValue('sources_id', Number(item.value));
+                                                    setDropsListState(null);
+                                                }}
+                                            />
+                                        ))}
+                                    </Menu>
+                                </View>
                                 <View style={{ position: 'absolute', top: '50%', right: 20, transform: [{ translateY: -10 }], flexDirection: 'row', columnGap: 10 }}>
                                     <TouchableOpacity onPress={showDialog}>
                                         <MaterialIcons name="edit" size={22} />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => setFieldValue('sources_id', 0)}>
+                                        <MaterialIcons name="clear" size={22} />
                                     </TouchableOpacity>
                                 </View>
                             </>
