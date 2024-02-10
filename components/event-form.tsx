@@ -230,16 +230,8 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
         });
     }, [values.status])
 
-    // Inside your component
-
     useEffect(() => {
-        // Calculate price per day whenever price_per_person or the number of people changes
-        const pricePerDay = (values.parents + values.childrens);
-        setFieldValue('price_per_day', pricePerDay);
-    }, [values.parents, values.childrens]);
-
-    useEffect(() => {
-        if (values.start_date && values.end_date) {
+        if (values.start_date && values.end_date && values.price_per_day) {
             const daysDifference = differenceInDays(values.end_date, new Date(values.start_date));
             const finalPrice = values.price_per_day * daysDifference;
             setFieldValue('final_price', finalPrice);
@@ -250,6 +242,11 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
         // Calculate payment_on_place whenever final_price or down_payment changes
         const paymentOnPlace = values.final_price - values.down_payment;
         setFieldValue('payment_on_place', paymentOnPlace);
+        if (values.start_date && values.end_date) {
+            const daysDifference = differenceInDays(values.end_date, new Date(values.start_date));
+            const finalPrice = Math.ceil(values.final_price / daysDifference);
+            setFieldValue('price_per_day', finalPrice);
+        }
     }, [values.final_price, values.down_payment]);
 
     const handleStartDateChange = useCallback(
