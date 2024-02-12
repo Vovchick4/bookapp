@@ -65,7 +65,7 @@ export default function FinanceRoute() {
                     </View>
                     <Text style={{ marginLeft: 13, fontWeight: '800' }}>Очікувані виплати: {bookings.no_paid + bookings.payment_on_place} {user?.company.currency}</Text>
                     <Divider bold style={{ height: 4 }} />
-                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Загальна кількість: {bookings.no_paid + bookings.payment_on_place + bookings.deposit + bookings.fullpaid} {user?.company.currency}</Text>
+                    <Text style={{ marginLeft: 13, fontWeight: '800' }}>Загальна вартість: {bookings.no_paid + bookings.payment_on_place + bookings.deposit + bookings.fullpaid} {user?.company.currency}</Text>
                 </View>
             ) : (
                 <Text>{isStart ? "В даному діапазону не знайдено бронювань" : ""}</Text>

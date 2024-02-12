@@ -135,7 +135,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
             <TextInput
                 activeOutlineColor={colors.orangeColor}
                 mode="outlined"
-                label="Name"
+                label="Назва"
                 autoComplete="name"
                 value={values.name}
                 onChangeText={handleChange('name')}
@@ -153,7 +153,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
             />
             <DropDown
                 mode="outlined"
-                label="Ємність кімнати"
+                label="Кількість гостей"
                 list={twentyElements}
                 value={values.count_room}
                 activeColor={colors.orangeColor}

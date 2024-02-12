@@ -1,8 +1,8 @@
 import { useFormik } from "formik";
-import { Alert, TouchableOpacity, View } from "react-native";
+import { Alert, Linking, TouchableOpacity, View } from "react-native";
 import { utcToZonedTime } from "date-fns-tz";
 import DropDown from "react-native-paper-dropdown";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Foundation, MaterialIcons } from "@expo/vector-icons";
 import DialogInput from 'react-native-dialog-input';
 import { addDays, differenceInDays, format } from "date-fns";
 import { DatePickerInput, TimePickerModal } from 'react-native-paper-dates';
@@ -66,7 +66,7 @@ const dropStates = {
     add_sources: 'add_sources',
 }
 
-const twentyElements = Array.from({ length: 20 }, (_, index) => ({ label: index + 1 + "", value: index + 1 }));
+const twentyElements = Array.from({ length: 21 }, (_, index) => ({ label: index + "", value: index }));
 
 const initialValues: Values = {
     start_date: undefined,
@@ -132,7 +132,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
             value: EventStatus.deposit,
         },
         {
-            label: 'Не оплачено',
+            label: 'Відсутність оплати',
             color: colors.statusNoPaid,
             value: EventStatus.nopaid,
         },
@@ -197,7 +197,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
             },
-            title: "Book",
+            title: values.name ? values.name : "Book",
             headerRight: () => (
                 <View style={{ flexDirection: 'row' }}>
                     <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
@@ -228,7 +228,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                 }} />
             ),
         });
-    }, [values.status])
+    }, [values.status, values.name])
 
     useEffect(() => {
         if (values.start_date && values.end_date && values.price_per_day) {
@@ -307,7 +307,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     <DatePickerInput
                         mode="outlined"
                         locale="en-GB"
-                        label="start date"
+                        label="Прибуття"
                         inputMode="start"
                         value={values.start_date}
                         onChange={(date) => handleStartDateChange(date)}
@@ -315,7 +315,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     <DatePickerInput
                         mode="outlined"
                         locale="en-GB"
-                        label="end date"
+                        label="Ви'їзд"
                         inputMode="end"
                         value={values.end_date}
                         onChange={(value) => setFieldValue('end_date', value)}
@@ -403,36 +403,38 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     showDropDown={() => setDropsListState(dropStates.children)}
                     onDismiss={() => setDropsListState(null)}
                 />
-                <Surface style={{ elevation: 5, borderRadius: 5, backgroundColor: colors.surface }}>
-                    <Text style={{ padding: 10 }}>Статус бронювання:</Text>
-                    <RadioButton.Group value={values.status} onValueChange={(value) => setFieldValue('status', value)}>
-                        {eventStatuses.map(({ label, value, color }) => (
-                            <RadioButton.Item key={value} label={label} color={color} value={value} />
-                        ))}
-                    </RadioButton.Group>
-                </Surface>
                 <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
                     <Text>Інформація про клієнта:</Text>
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
-                        label="Name"
+                        label="Гість"
                         autoComplete="name"
                         value={values.name}
                         onChangeText={handleChange('name')}
                     />
+                    <View style={{ position: 'relative' }}>
+                        <TextInput
+                            activeOutlineColor={colors.orangeColor}
+                            mode="outlined"
+                            label="Телефон"
+                            autoComplete="tel"
+                            value={values.phone}
+                            onChangeText={handleChange('phone')}
+                        />
+                        <View style={{ position: 'absolute', top: '50%', right: 20, transform: [{ translateY: -10 }], }}>
+                            <TouchableOpacity onPress={() => {
+                                Linking.openURL(`tel:${values.phone}`)
+                                    .catch((err) => console.error('Error opening phone dialer:', err));
+                            }}>
+                                <Foundation name="telephone" size={22} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
-                        label="Phone"
-                        autoComplete="tel"
-                        value={values.phone}
-                        onChangeText={handleChange('phone')}
-                    />
-                    <TextInput
-                        activeOutlineColor={colors.orangeColor}
-                        mode="outlined"
-                        label="Passport"
+                        label="Документ"
                         value={values.passport}
                         onChangeText={handleChange('passport')}
                     />
@@ -471,6 +473,14 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         )}
                     </View>
                 </Surface>
+                <Surface style={{ elevation: 5, borderRadius: 5, backgroundColor: colors.surface }}>
+                    <Text style={{ padding: 10 }}>Статус бронювання:</Text>
+                    <RadioButton.Group value={values.status} onValueChange={(value) => setFieldValue('status', value)}>
+                        {eventStatuses.map(({ label, value, color }) => (
+                            <RadioButton.Item key={value} label={label} color={color} value={value} />
+                        ))}
+                    </RadioButton.Group>
+                </Surface>
                 <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
                     <Text>Калькулятор ціни:</Text>
                     <TextInput
@@ -490,20 +500,20 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
                         mode="outlined"
-                        label="Завдаток"
+                        label="Передоплата"
                         value={String(values.down_payment)}
                         onChangeText={handleChange('down_payment')}
                     />
                     <DatePickerInput
                         mode="outlined"
                         locale="en-GB"
-                        label="Дата завдатку"
+                        label="Дата платежу"
                         inputMode="start"
                         value={values.down_payment_date}
                         onChange={(value) => setFieldValue('down_payment_date', value)}
                     />
                     <View>
-                        <Text style={{ fontWeight: "800", fontSize: 17 }}>Ціна на місці:</Text>
+                        <Text style={{ fontWeight: "800", fontSize: 17 }}>Оплата на місці:</Text>
                         <Text style={{ fontWeight: "800", fontSize: 17, color: colors.notification }}>{values.payment_on_place}</Text>
                     </View>
                 </Surface>
@@ -512,7 +522,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     activeOutlineColor={colors.orangeColor}
                     multiline
                     mode="outlined"
-                    label="Нотатка"
+                    label="Примітки"
                     value={String(values.notes)}
                     onChangeText={handleChange('notes')}
                 />
@@ -520,9 +530,9 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
 
             <DialogInput
                 isDialogVisible={isDialogVisible}
-                title={'Enter Text'}
-                message={'Please enter your text:'}
-                hintInput={'Type here...'}
+                title={'Вкажіть текст'}
+                message={"Вкажіть ім'я:"}
+                hintInput={'Натисніть тут...'}
                 submitInput={handleSubmitPromt}
                 closeDialog={handleCancel}
             >
