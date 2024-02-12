@@ -66,12 +66,13 @@ export default function CopmanyRoute() {
                             left={<TextInput.Icon icon="web" style={{ opacity: 0 }} />}
                             activeOutlineColor={colors.orangeColor}
                             mode="outlined"
-                            label="Name"
+                            label="Назва"
                             autoComplete="name"
                             error={!!formik.errors.name}
                             value={formik.values.name}
                             onBlur={formik.handleBlur('name')}
                             onChangeText={formik.handleChange('name')}
+                            keyboardType="default"
                         />
                         <HelperText type="error" visible={!!formik.errors.name}>
                             {formik.errors.name}
@@ -94,6 +95,7 @@ export default function CopmanyRoute() {
                             value={formik.values.city}
                             onBlur={formik.handleBlur('city')}
                             onChangeText={formik.handleChange('city')}
+                            keyboardType="default"
                         />
                     </View>
 
@@ -113,6 +115,7 @@ export default function CopmanyRoute() {
                             value={formik.values.post_code}
                             onBlur={formik.handleBlur('post_code')}
                             onChangeText={formik.handleChange('post_code')}
+                            keyboardType="default"
                         />
                     </View>
 
@@ -132,6 +135,7 @@ export default function CopmanyRoute() {
                             value={formik.values.address}
                             onBlur={formik.handleBlur('address')}
                             onChangeText={formik.handleChange('address')}
+                            keyboardType="default"
                         />
                     </View>
 
@@ -144,6 +148,7 @@ export default function CopmanyRoute() {
                         value={formik.values.web_site}
                         onBlur={formik.handleBlur('web_site')}
                         onChangeText={formik.handleChange('web_site')}
+                        keyboardType="default"
                     />
 
                     <View style={{ position: 'relative', marginTop: 20 }}>

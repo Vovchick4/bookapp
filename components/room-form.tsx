@@ -139,6 +139,7 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                 autoComplete="name"
                 value={values.name}
                 onChangeText={handleChange('name')}
+                keyboardType="default"
             />
             <DropDown
                 mode="outlined"

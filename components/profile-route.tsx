@@ -72,6 +72,7 @@ export default function ProfileRoute() {
                             value={formik.values.email}
                             onBlur={formik.handleBlur('email')}
                             onChangeText={formik.handleChange('email')}
+                            keyboardType="default"
                         />
                         <HelperText type="error" visible={!!formik.errors.email}>
                             {formik.errors.email}
@@ -94,6 +95,7 @@ export default function ProfileRoute() {
                             value={formik.values.name}
                             onBlur={formik.handleBlur('name')}
                             onChangeText={formik.handleChange('name')}
+                            keyboardType="default"
                         />
                     </View>
                     <HelperText type="error" visible={!!formik.errors.name}>

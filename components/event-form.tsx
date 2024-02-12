@@ -105,7 +105,7 @@ const pickModalTypes = {
 // Define your target time zone (e.g., 'Europe/Kiev')
 const targetTimeZone = 'Europe/Kiev';
 
-export default function EventForm({ mode, start_date, bookId, room_id, is_room_vis, eventData, onSubmit, deleteEvent }: Props) {
+export default function EventForm({ mode, start_date, bookId, room_id, is_room_vis, eventData, onSubmit, deleteEvent, roomName }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
     const [sourceName, setSourceName] = useState('');
@@ -197,7 +197,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
             headerStyle: {
                 backgroundColor: statusesColors[values.status],
             },
-            title: values.name ? values.name : "Book",
+            title: roomName ? roomName : "Оренда",
             headerRight: () => (
                 <View style={{ flexDirection: 'row' }}>
                     <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
@@ -228,7 +228,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                 }} />
             ),
         });
-    }, [values.status, values.name])
+    }, [values.status, roomName])
 
     useEffect(() => {
         if (values.start_date && values.end_date && values.price_per_day) {
@@ -330,7 +330,9 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                             onDismiss={onDismiss}
                             onConfirm={({ hours, minutes }) => {
                                 setVisible(null);
-                                setFieldValue("time_arrival", `${hours}:${minutes}`);
+                                const formattedMinutes = String(minutes).padStart(2, '0');
+                                const formattedHour = hours === 0 ? '00' : String(hours);
+                                setFieldValue("time_arrival", `${formattedHour}:${formattedMinutes}`);
                             }}
                         />
                     </View>
@@ -343,7 +345,9 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                             onDismiss={onDismiss}
                             onConfirm={({ hours, minutes }) => {
                                 setVisible(null);
-                                setFieldValue("time_departure", `${hours}:${minutes}`);
+                                const formattedMinutes = String(minutes).padStart(2, '0');
+                                const formattedHour = hours === 0 ? '00' : String(hours);
+                                setFieldValue("time_departure", `${formattedHour}:${formattedMinutes}`);
                             }}
                         />
                     </View>
@@ -412,6 +416,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         autoComplete="name"
                         value={values.name}
                         onChangeText={handleChange('name')}
+                        keyboardType="default"
                     />
                     <View style={{ position: 'relative' }}>
                         <TextInput
@@ -421,6 +426,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                             autoComplete="tel"
                             value={values.phone}
                             onChangeText={handleChange('phone')}
+                            keyboardType="phone-pad"
                         />
                         <View style={{ position: 'absolute', top: '50%', right: 20, transform: [{ translateY: -10 }], }}>
                             <TouchableOpacity onPress={() => {
@@ -437,6 +443,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         label="Документ"
                         value={values.passport}
                         onChangeText={handleChange('passport')}
+                        keyboardType="default"
                     />
 
                     {(isLoading || isLoadingCreateSoruce) && <ActivityIndicator animating />}
@@ -489,6 +496,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         label="Ціна за добу"
                         value={String(values.price_per_day)}
                         onChangeText={handleChange('price_per_day')}
+                        keyboardType="numeric"
                     />
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
@@ -496,6 +504,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         label="Кінцева ціна"
                         value={String(values.final_price)}
                         onChangeText={handleChange('final_price')}
+                        keyboardType="numeric"
                     />
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
@@ -503,6 +512,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         label="Передоплата"
                         value={String(values.down_payment)}
                         onChangeText={handleChange('down_payment')}
+                        keyboardType="numeric"
                     />
                     <DatePickerInput
                         mode="outlined"
@@ -525,6 +535,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     label="Примітки"
                     value={String(values.notes)}
                     onChangeText={handleChange('notes')}
+                    keyboardType="default"
                 />
             </View>
 
@@ -540,6 +551,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     value={sourceName}
                     onChangeText={(text) => setSourceName(text)}
                     autoFocus={true}
+                    keyboardType="default"
                 />
             </DialogInput>
         </Fragment>

@@ -12,6 +12,7 @@ export default function CalendarController({ route: { params } }: any) {
     const { reset, mutate, error, isPending } = useCalendarMutate({ id: params.type === 'event' ? params.bookId || -1 : params.room_id || -1 });
     const { data: room, isLoading: isLoadingRoom } = useGetQueryRoomById({ roomId: params.room_id || -1, mode: params.mode });
     const { data: event, isLoading: isLoadingEvent } = useGetQueryEventById({ bookId: params.bookId || undefined, mode: params.mode });
+    console.log("🚀 ~ CalendarController ~ event:", event)
 
     return (
         <View style={{ flex: 1 }}>
