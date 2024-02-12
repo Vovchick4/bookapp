@@ -116,7 +116,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                         <TouchableNativeFeedback
                                             key={eventIndex}
                                             background={TouchableNativeFeedback.Ripple(colors.primary, false)}
-                                            onPress={() => navigate("CalendarController", { bookId: event.id, room_id: room.id, roomName: room.name, mode: "update", is_room_vis: false, type: "event" })}
+                                            onPress={() => navigate("CalendarController", { bookId: event.id, room_id: room.id, roomName: room.name, mode: "update", is_room_vis: false, type: "event", eventData: JSON.stringify(event) })}
                                         >
                                             <View
                                                 style={{

@@ -13,6 +13,6 @@ export default function useGetQueryEventById({ bookId, mode }: { bookId: number 
         },
         enabled: mode === 'update' && bookId !== undefined,
         refetchOnWindowFocus: true,
-        refetchOnReconnect: true
+        refetchOnReconnect: true,
     })
 }

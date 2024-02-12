@@ -24,7 +24,7 @@ interface Props {
     start_date: Date | undefined;
     room_id: number;
     roomName: string;
-    eventData: IEventEntity;
+    eventData: IEventEntity | string;
     onSubmit: (data: any) => void;
     deleteEvent: () => void;
 }
@@ -164,21 +164,23 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                 setFieldValue('sources_id', 0);
             }
 
-            if (eventData && mode === 'update' && bookId !== undefined) {
+            const data = typeof eventData === 'string' ? JSON.parse(eventData) : undefined;
+
+            if (data && mode === 'update' && bookId !== undefined) {
                 // console.log("🚀 ~ file: event-form.tsx:132 ~ useCallback ~ eventData:", eventData)
-                Object.keys(eventData).forEach((event) => {
+                Object.keys(data).forEach((event) => {
                     if (event !== 'id' && event !== 'rooms_id' && event !== 'created_at' && event !== 'updated_at') {
-                        if (eventData[event]) {
+                        if (data[event]) {
                             if (event === 'start_date' || event === 'end_date') {
-                                setFieldValue('start_date', new Date(eventData["start_date"]));
-                                setFieldValue('end_date', new Date(eventData["end_date"]));
-                            } else if (event === 'down_payment_date' && eventData['down_payment_date']) {
-                                const inputDate = eventData['down_payment_date'];
+                                setFieldValue('start_date', new Date(data["start_date"]));
+                                setFieldValue('end_date', new Date(data["end_date"]));
+                            } else if (event === 'down_payment_date' && data['down_payment_date']) {
+                                const inputDate = data['down_payment_date'];
                                 setFieldValue('down_payment_date', String(inputDate) !== '0000-00-00' ? new Date(inputDate) : undefined);
                             }
                             else {
                                 // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", event)
-                                setFieldValue(event, eventData[event]);
+                                setFieldValue(event, data[event]);
                             }
                         }
                     }
