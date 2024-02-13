@@ -184,7 +184,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                     <TouchableOpacity
                                         key={index}
                                         style={{ flex: 1, height: 50, paddingLeft: 10, alignItems: 'flex-start', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor, borderLeftColor: room.with_color ? defineBgColor(room, 1) : 'transparent', borderLeftWidth: 4 }}
-                                        onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room" })}>
+                                        onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room", rooms: JSON.stringify(rooms) })}>
                                         <Text style={{ fontSize: 12 }} numberOfLines={1}>
                                             <Feather name="user" />
                                             {room.count_room}

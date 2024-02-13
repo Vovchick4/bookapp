@@ -12,6 +12,7 @@ export interface IRoomEntity {
     number_of_double_beds: number
     color: string
     with_color: boolean
+    sort_order: number
     bookings: IEventEntity[]
 }
 

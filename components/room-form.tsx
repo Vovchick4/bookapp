@@ -1,6 +1,7 @@
+import { useCallback, useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { Alert, StatusBar, View } from "react-native";
-import { useCallback, useEffect, useState } from "react";
+import SelectDropdown from "react-native-select-dropdown";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import DropDown, { DropDownPropsInterface } from "react-native-paper-dropdown";
 import { Button, Checkbox, Icon, IconButton, Modal, Portal, Text, TextInput } from "react-native-paper";
@@ -12,6 +13,7 @@ import hexToRgba from "../utils/hex-to-rgba";
 interface Props {
     mode?: string;
     roomId: number;
+    rooms: string
     roomData: IRoomEntity;
     onSubmit: (data: any) => void;
     deleteRoom: () => void;
@@ -60,9 +62,10 @@ const initialValues = {
     number_of_double_beds: 0,
     color: roomColors[0],
     with_color: false,
+    sort_order: 0,
 }
 
-export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom }: Props) {
+export default function RoomForm({ mode, roomId, rooms, roomData, onSubmit, deleteRoom }: Props) {
     const { colors } = useAppTheme();
     const navigation = useNavigation();
     const [visible, setVisible] = useState(false);
@@ -196,6 +199,22 @@ export default function RoomForm({ mode, roomId, roomData, onSubmit, deleteRoom 
                 showDropDown={() => setDropsListState(dropStates.number_of_doubles)}
                 onDismiss={() => setDropsListState(null)}
             />
+            <Text>Показати замовлення:</Text>
+            {mode === 'update' && typeof rooms === 'string' && (
+                <SelectDropdown
+                    data={JSON.parse(rooms) as IRoomEntity[]}
+                    defaultButtonText={values.sort_order.toString()}
+                    onSelect={(selectedItem, index) => {
+                        setFieldValue('sort_order', selectedItem.sort_order)
+                    }}
+                    buttonTextAfterSelection={(selectedItem, index) => {
+                        return selectedItem.sort_order
+                    }}
+                    rowTextForSelection={(item, index) => {
+                        return item.sort_order
+                    }}
+                />
+            )}
             <View style={{ flexDirection: 'row', alignItems: "center", justifyContent: 'space-between' }}>
                 <Checkbox.Item
                     label="Позначити кольором"

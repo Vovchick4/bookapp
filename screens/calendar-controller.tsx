@@ -34,6 +34,7 @@ export default function CalendarController({ route: { params } }: any) {
                             mode={params.mode}
                             roomId={params.room_id || -1}
                             roomData={room}
+                            rooms={params.rooms || {}}
                             onSubmit={(data) => {
                                 mutate({ mode: params.mode === 'create' ? EQueries.createRoom : EQueries.updateRoom, data });
                             }}
