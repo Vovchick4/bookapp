@@ -15,11 +15,11 @@ const theme = {
         menuColor: '#3F5F5A',
         orangeColor: '#ED8B26',
         grayColor: "#91918F",
-        statusPaid: '#3CB371',
+        statusPaid: '#2DB2AA',
         statusPending: "#e5e533",
-        statusNoPaid: '#F08080',
+        statusNoPaid: '#FF0000',
         statusCanceled: '#808080',
-        statusDeposit: '#F0E68C',
+        statusDeposit: '#FFFF00',
     },
 };
 

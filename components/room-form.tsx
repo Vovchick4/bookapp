@@ -199,7 +199,7 @@ export default function RoomForm({ mode, roomId, rooms, roomData, onSubmit, dele
                 showDropDown={() => setDropsListState(dropStates.number_of_doubles)}
                 onDismiss={() => setDropsListState(null)}
             />
-            <Text>Показати замовлення:</Text>
+            <Text>Позиція в таблиці:</Text>
             {mode === 'update' && typeof rooms === 'string' && (
                 <SelectDropdown
                     data={JSON.parse(rooms) as IRoomEntity[]}
