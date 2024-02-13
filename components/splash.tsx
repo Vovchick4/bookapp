@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Image } from 'react-native';
 
 const styles = StyleSheet.create({
     container: {
@@ -15,6 +15,7 @@ const styles = StyleSheet.create({
 function Splash() {
     return (
         <View style={styles.container}>
+            <Image style={{ width: 100, height: 100, objectFit: 'contain' }} width={50} height={50} source={require('../assets/logo.png')} />
             <Text style={styles.text}>BookApp</Text>
         </View>
     );

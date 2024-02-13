@@ -162,8 +162,8 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                 <Text style={{ textAlign: 'center', }}>{1}</Text>
                             </View>
 
-                            <View style={{ position: 'absolute', top: 22, left: 10 }}>
-                                <Text style={{ color: colors.onSurface, }}>{currentInterval}</Text>
+                            <View style={{ position: 'absolute', top: 10, left: 25 }}>
+                                <Image style={{ objectFit: 'contain', width: 50, height: 50 }} width={50} height={50} source={require("../assets/logo.png")} />
                             </View>
 
                             {isLoadingRooms && (
