@@ -24,7 +24,7 @@ const kievTimeZone = 'Europe/Kiev';
 
 export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, statusesColors, onOpenFilter }: Props) {
     const { colors } = useAppTheme();
-    const { currentInterval, calendarViewType, onChangeInterval } = useCalendar();
+    const { calendarViewType, onChangeInterval, changeActiveBookId } = useCalendar();
     const [displayedDates, setDisplayedDates] = useState<Date[]>([]);
     const deferredDates = useDeferredValue(displayedDates);
     const scrollViewRef = useRef<ScrollView | null>(null);
@@ -116,6 +116,9 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                         <TouchableNativeFeedback
                                             key={eventIndex}
                                             background={TouchableNativeFeedback.Ripple(colors.primary, false)}
+                                            onLongPress={() => {
+                                                changeActiveBookId((prev) => ({ roomId: String(room.id), bookId: String(event.id) }));
+                                            }}
                                             onPress={() => navigate("CalendarController", { bookId: event.id, room_id: room.id, roomName: room.name, mode: "update", is_room_vis: false, type: "event", eventData: JSON.stringify(event) })}
                                         >
                                             <View

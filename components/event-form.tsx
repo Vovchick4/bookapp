@@ -437,7 +437,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                                 Linking.openURL(`tel:${values.phone}`)
                                     .catch((err) => console.error('Error opening phone dialer:', err));
                             }}>
-                                <Foundation name="telephone" size={22} />
+                                <Foundation name="telephone" size={25} />
                             </TouchableOpacity>
                         </View>
                     </View>

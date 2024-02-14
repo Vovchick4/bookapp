@@ -31,5 +31,6 @@ export default function useGetQueryUser() {
             }
         },
         enabled: !!user, // Enable the query based on token existence
+        refetchOnWindowFocus: false
     });
 }

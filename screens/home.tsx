@@ -3,10 +3,11 @@ import { CalendarList } from "react-native-calendars";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { Suspense, lazy, useCallback, useMemo, useState } from "react";
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { ActivityIndicator, FAB, Portal } from "react-native-paper";
-import { StyleSheet, View, SafeAreaView, Dimensions, Alert } from "react-native";
+import { ActivityIndicator, Button, FAB, Modal, Portal, RadioButton, Text } from "react-native-paper";
+import { StyleSheet, View, SafeAreaView, Dimensions, Alert, ScrollView } from "react-native";
 
 import { EventStatus } from "../types/event.entity";
+import useChangePosBookMutate from "../hooks/use-change-pos-book-mutate";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
 
@@ -23,7 +24,8 @@ export default function Home({ navigation: { navigate } }: any) {
     const [isModalState, setIsModalState] = useState<string | null>(null);
 
     const isFocused = useIsFocused();
-    const { queryRoom: { data, isLoading, isRefetching }, calendarViewType, isVisibleFullCalendar } = useCalendar();
+    const { queryRoom: { data, isLoading, isRefetching }, calendarViewType, isVisibleFullCalendar, activeBookId, changeActiveBookId } = useCalendar();
+    const { mutate: mutateBookPos, isPending: changingBookPos } = useChangePosBookMutate();
 
     const { height: screenHeight } = Dimensions.get('window');
     const halfScreenHeight = screenHeight / 2;
@@ -93,11 +95,38 @@ export default function Home({ navigation: { navigate } }: any) {
                 />
             </Suspense>
 
-            {/* <Portal>
-                <Modal visible={isModalState === Modal_States.filter} onDismiss={() => setIsModalState(null)} contentContainerStyle={{ backgroundColor: 'white', padding: 20 }}>
-                    <Text>Example Modal.  Click outside this area to dismiss.</Text>
-                </Modal>
-            </Portal> */}
+            {!isLoading && data && data.length > 0 && (
+                <Portal>
+                    <Modal visible={!!activeBookId?.roomId} onDismiss={() => changeActiveBookId(() => ({ roomId: "", bookId: "" }))} contentContainerStyle={{ maxHeight: 300, backgroundColor: 'white', padding: 20, paddingBottom: 5 }}>
+                        <ScrollView style={{ marginBottom: 10 }}>
+                            <RadioButton.Group onValueChange={newValue => changeActiveBookId(prev => ({ ...prev, roomId: newValue }))} value={String(activeBookId?.roomId)}>
+                                {data.map(({ id, name }, index) => (
+                                    <RadioButton.Item key={id} label={name} color={colors.orangeColor} value={id.toString()} />
+                                ))}
+                            </RadioButton.Group>
+                        </ScrollView>
+                        <Button
+                            loading={changingBookPos}
+                            disabled={changingBookPos}
+                            mode="outlined"
+                            textColor={colors.orangeColor}
+                            rippleColor={colors.orangeColor}
+                            onPress={() => {
+                                if (
+                                    activeBookId?.bookId !== undefined &&
+                                    activeBookId?.roomId !== undefined
+                                ) {
+                                    //@ts-ignore
+                                    mutateBookPos(activeBookId);
+                                    changeActiveBookId(() => ({ roomId: "", bookId: "" }));
+                                }
+                            }}
+                        >
+                            Зберигти
+                        </Button>
+                    </Modal>
+                </Portal>
+            )}
 
             {!isLoading && <Portal>
                 <FAB.Group

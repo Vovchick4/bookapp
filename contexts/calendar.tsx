@@ -1,4 +1,4 @@
-import { useContext, useState, createContext, useRef, useEffect, useTransition } from "react";
+import { useContext, useState, createContext, useRef, useEffect, useTransition, SetStateAction } from "react";
 import { format } from "date-fns-tz";
 import { UseQueryResult } from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,9 +20,11 @@ interface CalendarContextData {
     queryRoom: UseQueryResult<IRoomEntity[], Error>
     saveHeaderButtonRef: React.MutableRefObject<null>,
     currentInterval: string,
+    activeBookId: { roomId: string, bookId: string },
     isVisibleFullCalendar: boolean,
     onChangeView: (value: ECalendarViewType) => void,
     openModal: () => void,
+    changeActiveBookId: (func: SetStateAction<{ roomId: string, bookId: string }>) => void,
     onChangeInterval: (date: Date[], pos: number) => void,
 }
 
@@ -44,6 +46,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     const queryRooms = useGetQueryRooms();
     const saveHeaderButtonRef = useRef(null);
     const [currentInterval, setCurrentInterval] = useState('');
+    const [activeBookId, setActiveBookId] = useState<{ roomId: string, bookId: string }>({ roomId: "", bookId: "" });
     const [isVisibleFullCalendar, setIsVisibleFulliCalendar] = useState(false);
     const [calendarViewType, setCalendarViewType] = useState(ECalendarViewType.week);
     const [isPending, startTransiton] = useTransition();
@@ -64,6 +67,10 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
         // setCurrentInterval(`${format(date[pos + 1], 'MMM d', { timeZone: 'Europe/Kiev' })} - ${format(date[pos + 6], 'MMM d, yyyy', { timeZone: 'Europe/Kiev' })}`);
     }
 
+    const changeActiveBookId = (func: SetStateAction<{ roomId: string, bookId: string }>) => {
+        setActiveBookId(func);
+    }
+
     const openModal = () => {
         setIsVisibleFulliCalendar(prev => !prev)
     }
@@ -78,7 +85,7 @@ export function CalendarProvider({ children }: CalendarProviderProps) {
     };
 
     return (
-        <CalendarContext.Provider value={{ calendarViewType, queryRoom: queryRooms, saveHeaderButtonRef, isVisibleFullCalendar, currentInterval, onChangeView, openModal, onChangeInterval }}>
+        <CalendarContext.Provider value={{ activeBookId, changeActiveBookId, calendarViewType, queryRoom: queryRooms, saveHeaderButtonRef, isVisibleFullCalendar, currentInterval, onChangeView, openModal, onChangeInterval }}>
             {children}
         </CalendarContext.Provider>
     )

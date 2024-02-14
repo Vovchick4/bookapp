@@ -111,3 +111,7 @@ export const getEmployeeById = async (employeeId: number | string) => {
 export const getEmployees = async () => {
     return (await axios.get(`/employee/get-employees`)).data;
 }
+
+export const changePositionBook = async (data: { roomId: number | string, bookId: number | string }) => {
+    return (await axios.post('/room/change-position', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
+}
