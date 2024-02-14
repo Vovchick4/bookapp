@@ -318,7 +318,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                     <DatePickerInput
                         mode="outlined"
                         locale="en-GB"
-                        label="Ви'їзд"
+                        label="Від'їзд"
                         inputMode="end"
                         value={values.end_date}
                         activeOutlineColor={colors.orangeColor}
