@@ -4,7 +4,7 @@
     "slug": "bookapp",
     "version": "4.3.0",
     "orientation": "portrait",
-    "icon": "./assets/icon-logo.png",
+    "icon": "./assets/logo2_1024_1024.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon-logo.png",
+        "foregroundImage": "./assets/logo2_1024_1024.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.vova2.bookapp"

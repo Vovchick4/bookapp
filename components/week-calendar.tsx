@@ -163,7 +163,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                             </View>
 
                             <View style={{ position: 'absolute', top: 10, left: 25 }}>
-                                <Image style={{ objectFit: 'contain', width: 50, height: 50 }} width={50} height={50} source={require("../assets/logo.png")} />
+                                <Image style={{ objectFit: 'contain', width: 50, height: 50 }} width={50} height={50} source={require("../assets/logo2source-removebg-preview.png")} />
                             </View>
 
                             {isLoadingRooms && (

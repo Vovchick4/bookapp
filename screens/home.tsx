@@ -4,9 +4,8 @@ import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { Suspense, lazy, useCallback, useMemo, useState } from "react";
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { ActivityIndicator, FAB, Portal } from "react-native-paper";
-import { StyleSheet, View, ScrollView, SafeAreaView, Dimensions, Alert } from "react-native";
+import { StyleSheet, View, SafeAreaView, Dimensions, Alert } from "react-native";
 
-import { IRoomEntity } from "../types/room.entity";
 import { EventStatus } from "../types/event.entity";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 import { ECalendarViewType, TSatusColors, useCalendar } from "../contexts/calendar";
@@ -105,6 +104,8 @@ export default function Home({ navigation: { navigate } }: any) {
                     open={isModalState === Modal_States.fab}
                     visible={isFocused && (isModalState === null || isModalState === Modal_States.fab)}
                     icon={'plus'}
+                    color={colors.surface}
+                    fabStyle={{ backgroundColor: colors.menuColor }}
                     actions={[
                         {
                             icon: 'plus',

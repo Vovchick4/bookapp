@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
 function Splash() {
     return (
         <View style={styles.container}>
-            <Image style={{ width: 100, height: 100, objectFit: 'contain' }} width={50} height={50} source={require('../assets/logo.png')} />
+            <Image style={{ width: 100, height: 100, objectFit: 'contain' }} width={50} height={50} source={require('../assets/logo2source-removebg-preview.png')} />
             <Text style={styles.text}>BookApp</Text>
         </View>
     );

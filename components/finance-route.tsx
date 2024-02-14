@@ -18,6 +18,9 @@ export default function FinanceRoute() {
                 locale="en-GB"
                 label="З"
                 inputMode="start"
+                selectionColor={colors.orangeColor}
+                activeOutlineColor={colors.orangeColor}
+                activeUnderlineColor={colors.orangeColor}
                 value={dateString.start_date}
                 onChange={(value) => onChangeDate('start_date', value)}
             />
@@ -26,6 +29,9 @@ export default function FinanceRoute() {
                 locale="en-GB"
                 label="До"
                 inputMode="start"
+                selectionColor={colors.orangeColor}
+                activeOutlineColor={colors.orangeColor}
+                activeUnderlineColor={colors.orangeColor}
                 value={dateString.end_date}
                 onChange={(value) => onChangeDate('end_date', value)}
             />

@@ -312,6 +312,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         label="Прибуття"
                         inputMode="start"
                         value={values.start_date}
+                        activeOutlineColor={colors.orangeColor}
                         onChange={(date) => handleStartDateChange(date)}
                     />
                     <DatePickerInput
@@ -320,6 +321,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         label="Ви'їзд"
                         inputMode="end"
                         value={values.end_date}
+                        activeOutlineColor={colors.orangeColor}
                         onChange={(value) => setFieldValue('end_date', value)}
                         defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
                     />
@@ -456,7 +458,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                                     <Menu
                                         visible={dropStates.source === dropsListState}
                                         onDismiss={() => setDropsListState(null)}
-                                        anchor={<Button contentStyle={{ justifyContent: "flex-start" }} mode="outlined" onPress={() => setDropsListState(dropStates.source)}>{values.sources_id !== 0 ? data.find(({ value }) => Number(value) === values.sources_id)?.label : 'Походження:'}</Button>}
+                                        anchor={<Button textColor={colors.orangeColor} contentStyle={{ justifyContent: "flex-start" }} mode="outlined" onPress={() => setDropsListState(dropStates.source)}>{values.sources_id !== 0 ? data.find(({ value }) => Number(value) === values.sources_id)?.label : 'Походження:'}</Button>}
                                     >
                                         {data.map((item) => (
                                             <Menu.Item
@@ -521,6 +523,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         locale="en-GB"
                         label="Дата платежу"
                         inputMode="start"
+                        activeOutlineColor={colors.orangeColor}
                         value={values.down_payment_date}
                         onChange={(value) => setFieldValue('down_payment_date', value)}
                     />
