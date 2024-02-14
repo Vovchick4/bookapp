@@ -19,7 +19,7 @@ const theme = {
         statusPending: "#e5e533",
         statusNoPaid: '#FF0000',
         statusCanceled: '#808080',
-        statusDeposit: '#FFFF00',
+        statusDeposit: '#ED8B26',
     },
 };
 

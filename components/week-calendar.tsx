@@ -3,7 +3,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { Feather } from "@expo/vector-icons";
 import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
 import { addDays, addMonths, differenceInDays, eachDayOfInterval, isSameDay, isSaturday, isSunday, isWithinInterval } from "date-fns";
-import { Animated, Image, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, Image, NativeSyntheticEvent, ScrollView, StyleSheet, Text, TouchableNativeFeedback, TouchableOpacity, View } from "react-native";
 
 import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
@@ -30,6 +30,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const scrollViewRef = useRef<ScrollView | null>(null);
     const [isPending, startTransiton] = useTransition();
     const translateYValue = useRef(new Animated.Value(0)).current;
+    const deviceWidth = Dimensions.get('window').width;
 
     useEffect(() => {
         if (date) {
@@ -159,10 +160,10 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                     <View>
                         <View style={{ borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomWidth: 1, borderBottomColor: colors.menuColor }}>
                             <View style={{ opacity: 0 }}>
-                                <Text style={{ textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
-                                <Text style={{ textAlign: 'center', fontSize: 10, }}>{2023}</Text>
-                                <Text style={{ textAlign: 'center', }}>{"asda"}</Text>
-                                <Text style={{ textAlign: 'center', }}>{1}</Text>
+                                <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
+                                <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, }}>{2023}</Text>
+                                <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10 }}>{"asda"}</Text>
+                                <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10 }}>{1}</Text>
                             </View>
 
                             <View style={{ position: 'absolute', top: 10, left: 25 }}>
@@ -209,10 +210,10 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                             <View key={index} style={{ position: "relative" }}>
                                 <View style={[styles.row, { opacity: 0, borderBottomWidth: 1, borderBottomColor: colors.grayColor }, isSaturday(week) || isSunday(week) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor, backgroundColor: hexToRgba(colors.grayColor, 0.1) || "" } : { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor }]}>
                                     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-                                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
-                                        <Text style={{ textAlign: 'center', fontSize: 10, }}>{2023}</Text>
-                                        <Text style={{ textAlign: 'center', }}>{"asda"}</Text>
-                                        <Text style={{ textAlign: 'center', }}>{1}</Text>
+                                        <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, }}>{"sdas"}</Text>
+                                        <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, }}>{2023}</Text>
+                                        <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10 }}>{"asda"}</Text>
+                                        <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10 }}>{1}</Text>
                                     </View>
                                 </View>
                                 <Animated.View
@@ -228,10 +229,10 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                 >
                                     <View style={[styles.row, { borderBottomWidth: 1, borderBottomColor: colors.grayColor }, isSaturday(week) || isSunday(week) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor, backgroundColor: hexToRgba(colors.grayColor, 0.1) || "" } : { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor }]}>
                                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-                                            <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'MMM', { timeZone: 'Europe/Kiev' })}</Text>
-                                            <Text style={{ textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'yyyy', { timeZone: 'Europe/Kiev' })}</Text>
-                                            <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'EEE', { timeZone: 'Europe/Kiev' })}</Text>
-                                            <Text style={{ textAlign: 'center', color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{week.getDate()}</Text>
+                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'MMM', { timeZone: kievTimeZone })}</Text>
+                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'yyyy', { timeZone: kievTimeZone })}</Text>
+                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'EEE', { timeZone: kievTimeZone })}</Text>
+                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'd', { timeZone: kievTimeZone })}</Text>
                                         </View>
                                     </View>
                                 </Animated.View>
