@@ -22,6 +22,31 @@ type Props = {
 
 const kievTimeZone = 'Europe/Kiev';
 
+const weekDatys: { [key: string]: string } = {
+    'Mon': 'Пон',
+    'Tue': 'Вів',
+    'Wed': 'Сер',
+    'Thu': 'Чет',
+    'Fri': 'Пят',
+    'Sat': 'Суб',
+    'Sun': 'Нед',
+}
+
+const monthNames: { [key: string]: string } = {
+    'Jan': 'Січ',
+    'Feb': 'Лют',
+    'Mar': 'Бер',
+    'Apr': 'Кві',
+    'May': 'Тра',
+    'Jun': 'Чер',
+    'Jul': 'Лип',
+    'Aug': 'Сер',
+    'Sep': 'Вер',
+    'Oct': 'Жов',
+    'Nov': 'Лис',
+    'Dec': 'Гру',
+};
+
 export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, statusesColors, onOpenFilter }: Props) {
     const { colors } = useAppTheme();
     const { calendarViewType, onChangeInterval, changeActiveBookId } = useCalendar();
@@ -229,9 +254,9 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                                 >
                                     <View style={[styles.row, { borderBottomWidth: 1, borderBottomColor: colors.grayColor }, isSaturday(week) || isSunday(week) ? { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor, backgroundColor: hexToRgba(colors.grayColor, 0.1) || "" } : { width: 50, borderRightWidth: 1, borderRightColor: colors.grayColor }]}>
                                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'MMM', { timeZone: kievTimeZone })}</Text>
+                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{monthNames[format(week, 'MMM', { timeZone: kievTimeZone })]}</Text>
                                             <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'yyyy', { timeZone: kievTimeZone })}</Text>
-                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'EEE', { timeZone: kievTimeZone })}</Text>
+                                            <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{weekDatys[format(week, 'EEE', { timeZone: kievTimeZone })]}</Text>
                                             <Text style={{ fontFamily: 'Roboto', textAlign: 'center', fontSize: deviceWidth >= 360 ? 12 : 10, color: isSameDay(week, new Date()) ? colors.notification : colors.onSurface }}>{format(week, 'd', { timeZone: kievTimeZone })}</Text>
                                         </View>
                                     </View>
