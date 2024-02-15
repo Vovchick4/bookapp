@@ -127,7 +127,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
             value: EventStatus.fullpaid,
         },
         {
-            label: 'Занесено завдаток',
+            label: 'Передоплата',
             color: colors.statusDeposit,
             value: EventStatus.deposit,
         },

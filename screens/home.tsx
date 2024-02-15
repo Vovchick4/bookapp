@@ -157,7 +157,7 @@ export default function Home({ navigation: { navigate } }: any) {
                         },
                         {
                             icon: 'bed',
-                            label: 'Додати помещкання',
+                            label: 'Додати помешкання',
                             onPress: () => navigate('CalendarController', { mode: "create", type: "room" }),
                         }
                     ]}
