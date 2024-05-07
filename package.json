@@ -24,7 +24,7 @@
     "compose-function": "^3.0.3",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
-    "expo": "~49.0.15",
+    "expo": "~51.0.0",
     "expo-screen-orientation": "~6.0.6",
     "expo-secure-store": "^12.5.0",
     "expo-status-bar": "~1.6.0",
