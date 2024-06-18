@@ -9,6 +9,8 @@ export interface IUserEntity {
     email: string;
     password: string;
     remember_token: string;
+    trial_date: string | null;
+    is_subscription: boolean;
     company: ICompanyEntity
     role: EUserRole
     notes: string

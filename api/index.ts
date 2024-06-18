@@ -115,3 +115,8 @@ export const getEmployees = async () => {
 export const changePositionBook = async (data: { roomId: number | string, bookId: number | string }) => {
     return (await axios.post('/room/change-position', JSON.stringify(data), { headers: { 'Content-Type': 'application/json', } })).data;
 }
+
+// Subs
+export const getTrialVersion = async () => {
+    return (await axios.get(`/user/get-trial-version`)).data;
+}

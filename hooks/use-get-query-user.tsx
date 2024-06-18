@@ -17,7 +17,7 @@ export default function useGetQueryUser() {
                     axios.defaults.headers.authorization = `${user.remember_token}`;
                     // If token exists, execute the getUser() function to fetch user data
                     const res = await getUser();
-                    console.log(res.data);
+                    // console.log(res.data);
                     fillUser(res.data);
                     await queryClient.refetchQueries({ queryKey: ['get-rooms'] });
                     return res.data;
