@@ -16,15 +16,15 @@ import useUserChangePassMutate from "../hooks/use-user-change-pass-mutate";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
 
 const validationSchema = Yup.object({
-    name: Yup.string().trim().required("Поле ім'я є обовязковим"),
-    email: Yup.string().trim().email("Укажіть дійсну електронну адресу.").required("Поле почта є обовязковим"),
+    name: Yup.string().trim().required("Поле ім'я є обов'язковим"),
+    email: Yup.string().trim().email("Укажіть дійсну електронну адресу.").required("Поле пошта є обов'язковим"),
 })
 
 const validationSchemaPassword = Yup.object({
-    password: Yup.string().trim().required("Поле пароль є обовязковим"),
-    new_password: Yup.string().trim().required("Поле новий пароль є обовязковим"),
+    password: Yup.string().trim().required("Поле пароль є обов'язковим"),
+    new_password: Yup.string().trim().required("Поле новий пароль є обов'язковим"),
     new_confirm_password: Yup.string().trim()
-        .required("Поле підтвердження є обовязковим")
+        .required("Поле підтвердження є обов'язковим")
         .oneOf([Yup.ref('new_password')], 'Пароль має співпадати з новим паролем'),
 })
 
@@ -66,7 +66,7 @@ export default function ProfileRoute() {
                             left={<TextInput.Icon icon="web" style={{ opacity: 0 }} />}
                             activeOutlineColor={colors.orangeColor}
                             mode="outlined"
-                            label="Почта"
+                            label="Пошта"
                             error={!!formik.errors.email}
                             autoComplete="email"
                             value={formik.values.email}
@@ -166,7 +166,7 @@ export default function ProfileRoute() {
                             left={<TextInput.Icon icon="web" style={{ opacity: 0 }} />}
                             activeOutlineColor={colors.orangeColor}
                             mode="outlined"
-                            label="Адресса"
+                            label="Адреса"
                             autoComplete="address-line1"
                             value={formik.values.address}
                             onBlur={formik.handleBlur('address')}
