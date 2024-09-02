@@ -1,8 +1,11 @@
 import { useFormik } from "formik";
-import { Alert, Linking, TouchableOpacity, View } from "react-native";
+import { Alert, Linking, TouchableOpacity, View, Modal } from "react-native";
 import { utcToZonedTime } from "date-fns-tz";
 import DropDown from "react-native-paper-dropdown";
 import { Foundation, MaterialIcons } from "@expo/vector-icons";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome3 from 'react-native-vector-icons/FontAwesome5';
+
 import DialogInput from 'react-native-dialog-input';
 import { addDays, differenceInDays, format } from "date-fns";
 import { DatePickerInput, TimePickerModal } from 'react-native-paper-dates';
@@ -106,19 +109,19 @@ const pickModalTypes = {
 const targetTimeZone = 'Europe/Kiev';
 
 export default function EventForm({ mode, start_date, bookId, room_id, is_room_vis, eventData, onSubmit, deleteEvent, roomName }: Props) {
-    const { colors } = useAppTheme();
+    const {colors} = useAppTheme();
     const navigation = useNavigation();
     const [sourceName, setSourceName] = useState('');
     const [isDialogVisible, setDialogVisible] = useState(false);
     const [dropsListState, setDropsListState] = useState<string | null>(null);
     const [visible, setVisible] = useState<string | null>(null)
-    const { values, setFieldValue, resetForm, handleChange, handleSubmit } = useFormik({
+    const {values, setFieldValue, resetForm, handleChange, handleSubmit} = useFormik({
         initialValues,
         onSubmit
     });
-    const { data, isLoading } = useGetMutateSources();
-    const { mutate, isPending: isLoadingCreateSoruce } = useCreateSourceMutate();
-    const { data: roomsNames, isLoading: isLoadingRoomsNames } = useGetQueryRoomsNames({ mode: mode || '' });
+    const {data, isLoading} = useGetMutateSources();
+    const {mutate, isPending: isLoadingCreateSoruce} = useCreateSourceMutate();
+    const {data: roomsNames, isLoading: isLoadingRoomsNames} = useGetQueryRoomsNames({mode: mode || ''});
 
     const eventStatuses = useMemo(() => ([
         {
@@ -177,8 +180,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                             } else if (event === 'down_payment_date' && data['down_payment_date']) {
                                 const inputDate = data['down_payment_date'];
                                 setFieldValue('down_payment_date', String(inputDate) !== '0000-00-00' ? new Date(inputDate) : undefined);
-                            }
-                            else {
+                            } else {
                                 // console.log("🚀 ~ file: event-form.tsx:154 ~ Object.keys ~ event:", event)
                                 setFieldValue(event, data[event]);
                             }
@@ -188,7 +190,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
             }
 
             return () => {
-                resetForm({ values: initialValues });
+                resetForm({values: initialValues});
             }
         }, [mode, eventData, room_id, start_date, bookId])
     );
@@ -201,8 +203,8 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
             },
             title: roomName ? roomName : "Оренда",
             headerRight: () => (
-                <View style={{ flexDirection: 'row' }}>
-                    <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit} />
+                <View style={{flexDirection: 'row'}}>
+                    <IconButton icon="content-save" iconColor={colors.surface} onPress={handleSubmit}/>
                     {mode === 'update' && <IconButton
                         icon="trash-can"
                         iconColor={colors.surface}
@@ -227,7 +229,7 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
             headerLeft: () => (
                 <IconButton icon="keyboard-backspace" iconColor={colors.surface} size={28} onPress={() => {
                     navigation.goBack();
-                }} />
+                }}/>
             ),
         });
     }, [values.status, roomName])
@@ -298,267 +300,403 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
     };
 
     const handleSubmitPromt = (value: string) => {
-        mutate({ name: value });
+        mutate({name: value});
         setDialogVisible(false);
     };
 
-    return (
-        <Fragment>
-            <View style={{ flex: 1, rowGap: 10, paddingHorizontal: 10, paddingTop: 10, paddingBottom: 50 }}>
-                <Surface style={{ elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
-                    <DatePickerInput
-                        mode="outlined"
-                        locale="en-GB"
-                        label="Прибуття"
-                        inputMode="start"
-                        value={values.start_date}
-                        activeOutlineColor={colors.orangeColor}
-                        onChange={(date) => handleStartDateChange(date)}
-                    />
-                    <DatePickerInput
-                        mode="outlined"
-                        locale="en-GB"
-                        label="Від'їзд"
-                        inputMode="end"
-                        value={values.end_date}
-                        activeOutlineColor={colors.orangeColor}
-                        onChange={(value) => setFieldValue('end_date', value)}
-                        defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
-                    />
-                    <View style={{ marginTop: 15, flex: 1, alignItems: 'center' }}>
-                        <Button style={{ width: "100%" }} textColor={colors.surface} buttonColor={colors.orangeColor} onPress={() => onShow(pickModalTypes.TA)} uppercase={false} mode="outlined">
-                            Час при'їзду  {values.time_arrival ? values.time_arrival?.toString() : '(невказано)'}
-                        </Button>
-                        <TimePickerModal
-                            visible={pickModalTypes.TA === visible}
-                            onDismiss={onDismiss}
-                            onConfirm={({ hours, minutes }) => {
-                                setVisible(null);
-                                const formattedMinutes = String(minutes).padStart(2, '0');
-                                const formattedHour = hours === 0 ? '00' : String(hours);
-                                setFieldValue("time_arrival", `${formattedHour}:${formattedMinutes}`);
-                            }}
+        const [modalVisible, setModalVisible] = useState(false);
+
+        const handlePress = () => setModalVisible(true);
+
+        const handleCall = () => {
+            setModalVisible(false);
+            Linking.openURL(`tel:${values.phone}`)
+                .catch((err) => console.error('Error opening phone dialer:', err));
+        };
+
+        const handleTelegram = () => {
+            setModalVisible(false);
+            Linking.openURL(`https://telegram.me/${values.phone}`)
+                .catch((err) => console.error('Error opening Telegram:', err));
+        };
+
+        const handleViber = () => {
+            setModalVisible(false);
+            Linking.openURL(`viber://chat?number=${values.phone}`)
+                .catch((err) => console.error('Error opening Viber:', err));
+        };
+
+        return (
+            <Fragment>
+                <View style={{flex: 1, rowGap: 10, paddingHorizontal: 10, paddingTop: 10, paddingBottom: 50}}>
+                    <Surface style={{elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface}}>
+                        <DatePickerInput
+                            mode="outlined"
+                            locale="en-GB"
+                            label="Прибуття"
+                            inputMode="start"
+                            value={values.start_date}
+                            activeOutlineColor={colors.orangeColor}
+                            onChange={(date) => handleStartDateChange(date)}
                         />
-                    </View>
-                    <View style={{ marginTop: 15, flex: 1, alignItems: 'center' }}>
-                        <Button style={{ width: "100%" }} textColor={colors.surface} buttonColor={colors.orangeColor} onPress={() => onShow(pickModalTypes.TD)} uppercase={false} mode="outlined">
-                            Час від'їзду {values.time_departure ? values.time_departure?.toString() : '(невказано)'}
-                        </Button>
-                        <TimePickerModal
-                            visible={pickModalTypes.TD === visible}
-                            onDismiss={onDismiss}
-                            onConfirm={({ hours, minutes }) => {
-                                setVisible(null);
-                                const formattedMinutes = String(minutes).padStart(2, '0');
-                                const formattedHour = hours === 0 ? '00' : String(hours);
-                                setFieldValue("time_departure", `${formattedHour}:${formattedMinutes}`);
-                            }}
+                        <DatePickerInput
+                            mode="outlined"
+                            locale="en-GB"
+                            label="Від'їзд"
+                            inputMode="end"
+                            value={values.end_date}
+                            activeOutlineColor={colors.orangeColor}
+                            onChange={(value) => setFieldValue('end_date', value)}
+                            defaultValue={values.start_date && (new Date(values.start_date).getDate() + 1).toString()}
                         />
-                    </View>
-                    <Counter
-                        count={values.start_date && values.end_date ? differenceInDays(values.start_date || new Date(), values.end_date || new Date()) : 0}
-                        onPress={(type) => {
-                            if (values.start_date) {
-                                if (values.end_date) {
-                                    setFieldValue("end_date", addDays(new Date(values.end_date), type === "plus" ? 1 : -1))
+                        <View style={{marginTop: 15, flex: 1, alignItems: 'center'}}>
+                            <Button style={{width: "100%"}} textColor={colors.surface} buttonColor={colors.orangeColor}
+                                    onPress={() => onShow(pickModalTypes.TA)} uppercase={false} mode="outlined">
+                                Час при'їзду {values.time_arrival ? values.time_arrival?.toString() : '(невказано)'}
+                            </Button>
+                            <TimePickerModal
+                                visible={pickModalTypes.TA === visible}
+                                onDismiss={onDismiss}
+                                onConfirm={({hours, minutes}) => {
+                                    setVisible(null);
+                                    const formattedMinutes = String(minutes).padStart(2, '0');
+                                    const formattedHour = hours === 0 ? '00' : String(hours);
+                                    setFieldValue("time_arrival", `${formattedHour}:${formattedMinutes}`);
+                                }}
+                            />
+                        </View>
+                        <View style={{marginTop: 15, flex: 1, alignItems: 'center'}}>
+                            <Button style={{width: "100%"}} textColor={colors.surface} buttonColor={colors.orangeColor}
+                                    onPress={() => onShow(pickModalTypes.TD)} uppercase={false} mode="outlined">
+                                Час від'їзду {values.time_departure ? values.time_departure?.toString() : '(невказано)'}
+                            </Button>
+                            <TimePickerModal
+                                visible={pickModalTypes.TD === visible}
+                                onDismiss={onDismiss}
+                                onConfirm={({hours, minutes}) => {
+                                    setVisible(null);
+                                    const formattedMinutes = String(minutes).padStart(2, '0');
+                                    const formattedHour = hours === 0 ? '00' : String(hours);
+                                    setFieldValue("time_departure", `${formattedHour}:${formattedMinutes}`);
+                                }}
+                            />
+                        </View>
+                        <Counter
+                            count={values.start_date && values.end_date ? differenceInDays(values.start_date || new Date(), values.end_date || new Date()) : 0}
+                            onPress={(type) => {
+                                if (values.start_date) {
+                                    if (values.end_date) {
+                                        setFieldValue("end_date", addDays(new Date(values.end_date), type === "plus" ? 1 : -1))
+                                    } else {
+                                        setFieldValue("end_date", addDays(new Date(values.start_date), type === "plus" ? 1 : -1))
+                                    }
                                 } else {
-                                    setFieldValue("end_date", addDays(new Date(values.start_date), type === "plus" ? 1 : -1))
+                                    Alert.alert(
+                                        "Виберіть стартову дату!",
+                                        "",
+                                        [{text: "OK"}]
+                                    )
                                 }
-                            } else {
-                                Alert.alert(
-                                    "Виберіть стартову дату!",
-                                    "",
-                                    [{ text: "OK" }]
-                                )
-                            }
-                        }}
-                    />
-                </Surface>
-                {isLoadingRoomsNames && <ActivityIndicator animating />}
-                {(!isLoadingRoomsNames && is_room_vis && mode === 'create' && roomsNames && roomsNames.length > 0) && (
+                            }}
+                        />
+                    </Surface>
+                    {isLoadingRoomsNames && <ActivityIndicator animating/>}
+                    {(!isLoadingRoomsNames && is_room_vis && mode === 'create' && roomsNames && roomsNames.length > 0) && (
+                        <DropDown
+                            mode="outlined"
+                            label="Вибір кімнати:"
+                            list={roomsNames.map(({name, id}) => ({label: name, value: id}))}
+                            value={values.room_id === -1 ? undefined : values.room_id}
+                            activeColor={colors.orangeColor}
+                            setValue={(value) => setFieldValue('room_id', Number(value))}
+                            visible={dropStates.room === dropsListState}
+                            showDropDown={() => setDropsListState(dropStates.room)}
+                            onDismiss={() => setDropsListState(null)}
+                        />
+                    )}
+
                     <DropDown
                         mode="outlined"
-                        label="Вибір кімнати:"
-                        list={roomsNames.map(({ name, id }) => ({ label: name, value: id }))}
-                        value={values.room_id === -1 ? undefined : values.room_id}
+                        label="Дорослі:"
+                        list={twentyElements}
+                        value={values.parents}
                         activeColor={colors.orangeColor}
-                        setValue={(value) => setFieldValue('room_id', Number(value))}
-                        visible={dropStates.room === dropsListState}
-                        showDropDown={() => setDropsListState(dropStates.room)}
+                        setValue={(value) => setFieldValue('parents', value)}
+                        visible={dropStates.parent === dropsListState}
+                        showDropDown={() => setDropsListState(dropStates.parent)}
                         onDismiss={() => setDropsListState(null)}
                     />
-                )}
-
-                <DropDown
-                    mode="outlined"
-                    label="Дорослі:"
-                    list={twentyElements}
-                    value={values.parents}
-                    activeColor={colors.orangeColor}
-                    setValue={(value) => setFieldValue('parents', value)}
-                    visible={dropStates.parent === dropsListState}
-                    showDropDown={() => setDropsListState(dropStates.parent)}
-                    onDismiss={() => setDropsListState(null)}
-                />
-                <DropDown
-                    mode="outlined"
-                    label="Діти:"
-                    list={twentyElements}
-                    value={values.childrens}
-                    activeColor={colors.orangeColor}
-                    setValue={(value) => setFieldValue('childrens', value)}
-                    visible={dropStates.children === dropsListState}
-                    showDropDown={() => setDropsListState(dropStates.children)}
-                    onDismiss={() => setDropsListState(null)}
-                />
-                <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
-                    <Text>Інформація про клієнта:</Text>
-                    <TextInput
-                        activeOutlineColor={colors.orangeColor}
+                    <DropDown
                         mode="outlined"
-                        label="Гість"
-                        autoComplete="name"
-                        value={values.name}
-                        onChangeText={handleChange('name')}
-                        keyboardType="default"
+                        label="Діти:"
+                        list={twentyElements}
+                        value={values.childrens}
+                        activeColor={colors.orangeColor}
+                        setValue={(value) => setFieldValue('childrens', value)}
+                        visible={dropStates.children === dropsListState}
+                        showDropDown={() => setDropsListState(dropStates.children)}
+                        onDismiss={() => setDropsListState(null)}
                     />
-                    <View style={{ position: 'relative' }}>
+                    <Surface style={{
+                        rowGap: 10,
+                        elevation: 5,
+                        borderRadius: 5,
+                        padding: 10,
+                        backgroundColor: colors.surface
+                    }}>
+                        <Text>Інформація про клієнта:</Text>
                         <TextInput
                             activeOutlineColor={colors.orangeColor}
                             mode="outlined"
-                            label="Телефон"
-                            autoComplete="tel"
-                            value={values.phone}
-                            onChangeText={handleChange('phone')}
-                            keyboardType="phone-pad"
+                            label="Гість"
+                            autoComplete="name"
+                            value={values.name}
+                            onChangeText={handleChange('name')}
+                            keyboardType="default"
                         />
-                        <View style={{ position: 'absolute', top: '50%', right: 20, transform: [{ translateY: -10 }], }}>
-                            <TouchableOpacity onPress={() => {
-                                Linking.openURL(`tel:${values.phone}`)
-                                    .catch((err) => console.error('Error opening phone dialer:', err));
+                        <View style={{position: 'relative'}}>
+                            <TextInput
+                                activeOutlineColor={colors.orangeColor}
+                                mode="outlined"
+                                label="Телефон"
+                                autoComplete="tel"
+                                value={values.phone}
+                                onChangeText={handleChange('phone')}
+                                keyboardType="phone-pad"
+                            />
+
+
+                            <View style={{
+                                position: 'absolute',
+                                bottom: 15,
+                                right: 20
                             }}>
-                                <Foundation name="telephone" size={25} />
-                            </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handlePress}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                    <Foundation name="telephone" size={25} color="black" />
+                                </TouchableOpacity>
+
+                                <Modal
+                                    animationType="slide"
+                                    transparent={true}
+                                    visible={modalVisible}
+                                    onRequestClose={() => setModalVisible(!modalVisible)}
+                                >
+                                    <View style={{
+                                        flex: 1,
+                                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                        justifyContent: 'flex-end',
+                                        alignItems: 'center'
+                                    }}>
+                                        <View style={{
+                                            width: '100%',
+                                            height: '30%',
+                                            backgroundColor: 'white',
+                                            borderTopLeftRadius: 20,
+                                            borderTopRightRadius: 20,
+                                            padding: 10,
+                                            paddingLeft: 15,
+                                            paddingRight: 15,
+                                            alignItems: 'center',
+                                            shadowColor: '#000',
+                                            shadowOffset: { width: 0, height: -2 },
+                                            shadowOpacity: 0.25,
+                                            shadowRadius: 4
+                                        }}>
+                                            <TouchableOpacity
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 10,
+                                                    right: 10
+                                                }}
+                                                onPress={() => setModalVisible(!modalVisible)}
+                                            >
+                                                <Ionicons name="close" size={30} color="black" />
+                                            </TouchableOpacity>
+
+                                            <Text style={{
+                                                marginBottom: 30,
+                                                marginTop: 10,
+                                                textAlign: 'center',
+                                                fontSize: 18,
+                                                fontWeight: '400'
+                                            }}>Відкрити за допомогою:</Text>
+
+                                            <View style={{
+                                                flexDirection: 'row',
+                                                justifyContent: 'space-around',
+                                                alignItems: 'center',
+                                                width: '100%',
+                                                height: '50%',
+                                            }}>
+                                                <TouchableOpacity onPress={handleCall} style={{ alignItems: 'center', marginHorizontal: 10 }}>
+                                                    <MaterialIcons name="phone" size={35} color="black" />
+                                                    <Text style={{ marginTop: 8 }}>Телефон</Text>
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity onPress={handleViber} style={{ alignItems: 'center', marginHorizontal: 10 }}>
+                                                    <FontAwesome3 name="viber" size={35} color="black" />
+                                                    <Text style={{ marginTop: 8 }}>Viber</Text>
+                                                </TouchableOpacity>
+
+                                                <TouchableOpacity onPress={handleTelegram} style={{ alignItems: 'center', marginHorizontal: 10 }}>
+                                                    <FontAwesome3 name="telegram" size={35} color="black" />
+                                                    <Text style={{ marginTop: 8 }}>Telegram</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </Modal>
+                            </View>
+
+
+
+
                         </View>
-                    </View>
+                            <TextInput
+                            activeOutlineColor={colors.orangeColor}
+                            mode="outlined"
+                            label="Документ"
+                            value={values.passport}
+                            onChangeText={handleChange('passport')}
+                            keyboardType="default"
+                            />
+
+                        {(isLoading || isLoadingCreateSoruce) && <ActivityIndicator animating/>}
+                        <View style={{position: 'relative'}}>
+                            {!isLoading && !isLoadingCreateSoruce && data && data?.length > 0 && (
+                                <>
+                                    <View>
+                                        <Menu
+                                            visible={dropStates.source === dropsListState}
+                                            onDismiss={() => setDropsListState(null)}
+                                            anchor={<Button textColor={colors.orangeColor}
+                                                            contentStyle={{justifyContent: "flex-start"}}
+                                                            mode="outlined"
+                                                            onPress={() => setDropsListState(dropStates.source)}>{values.sources_id !== 0 ? data.find(({value}) => Number(value) === values.sources_id)?.label : 'Походження:'}</Button>}
+                                        >
+                                            {data.map((item) => (
+                                                <Menu.Item
+                                                    key={item.value}
+                                                    title={item.label}
+                                                    onPress={() => {
+                                                        setFieldValue('sources_id', Number(item.value));
+                                                        setDropsListState(null);
+                                                    }}
+                                                />
+                                            ))}
+                                        </Menu>
+                                    </View>
+                                    <View style={{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        right: 20,
+                                        transform: [{translateY: -10}],
+                                        flexDirection: 'row',
+                                        columnGap: 10
+                                    }}>
+                                        <TouchableOpacity onPress={showDialog}>
+                                            <MaterialIcons name="edit" size={22}/>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => setFieldValue('sources_id', 0)}>
+                                            <MaterialIcons name="clear" size={22}/>
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+                    </Surface>
+                    <Surface style={{elevation: 5, borderRadius: 5, backgroundColor: colors.surface}}>
+                        <Text style={{padding: 10}}>Статус бронювання:</Text>
+                        <RadioButton.Group value={values.status}
+                                           onValueChange={(value) => setFieldValue('status', value)}>
+                            {eventStatuses.map(({label, value, color}) => (
+                                <RadioButton.Item key={value} label={label} color={color} value={value}/>
+                            ))}
+                        </RadioButton.Group>
+                    </Surface>
+                    <Surface style={{
+                        rowGap: 10,
+                        elevation: 5,
+                        borderRadius: 5,
+                        padding: 10,
+                        backgroundColor: colors.surface
+                    }}>
+                        <Text>Калькулятор ціни:</Text>
+                        <TextInput
+                            activeOutlineColor={colors.orangeColor}
+                            mode="outlined"
+                            label="Ціна за добу"
+                            value={String(values.price_per_day)}
+                            onChangeText={handleChange('price_per_day')}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            activeOutlineColor={colors.orangeColor}
+                            mode="outlined"
+                            label="Кінцева ціна"
+                            value={String(values.final_price)}
+                            onChangeText={handleChange('final_price')}
+                            keyboardType="numeric"
+                        />
+                        <TextInput
+                            activeOutlineColor={colors.orangeColor}
+                            mode="outlined"
+                            label="Передоплата"
+                            value={String(values.down_payment)}
+                            onChangeText={handleChange('down_payment')}
+                            keyboardType="numeric"
+                        />
+                        <DatePickerInput
+                            mode="outlined"
+                            locale="en-GB"
+                            label="Дата платежу"
+                            inputMode="start"
+                            activeOutlineColor={colors.orangeColor}
+                            value={values.down_payment_date}
+                            onChange={(value) => setFieldValue('down_payment_date', value)}
+                        />
+                        <View>
+                            <Text style={{fontWeight: "800", fontSize: 17}}>Оплата на місці:</Text>
+                            <Text style={{
+                                fontWeight: "800",
+                                fontSize: 17,
+                                color: colors.notification
+                            }}>{values.payment_on_place}</Text>
+                        </View>
+                    </Surface>
+
                     <TextInput
                         activeOutlineColor={colors.orangeColor}
+                        multiline
                         mode="outlined"
-                        label="Документ"
-                        value={values.passport}
-                        onChangeText={handleChange('passport')}
+                        label="Примітки"
+                        value={String(values.notes)}
+                        onChangeText={handleChange('notes')}
                         keyboardType="default"
                     />
+                </View>
 
-                    {(isLoading || isLoadingCreateSoruce) && <ActivityIndicator animating />}
-                    <View style={{ position: 'relative' }}>
-                        {!isLoading && !isLoadingCreateSoruce && data && data?.length > 0 && (
-                            <>
-                                <View>
-                                    <Menu
-                                        visible={dropStates.source === dropsListState}
-                                        onDismiss={() => setDropsListState(null)}
-                                        anchor={<Button textColor={colors.orangeColor} contentStyle={{ justifyContent: "flex-start" }} mode="outlined" onPress={() => setDropsListState(dropStates.source)}>{values.sources_id !== 0 ? data.find(({ value }) => Number(value) === values.sources_id)?.label : 'Походження:'}</Button>}
-                                    >
-                                        {data.map((item) => (
-                                            <Menu.Item
-                                                key={item.value}
-                                                title={item.label}
-                                                onPress={() => {
-                                                    setFieldValue('sources_id', Number(item.value));
-                                                    setDropsListState(null);
-                                                }}
-                                            />
-                                        ))}
-                                    </Menu>
-                                </View>
-                                <View style={{ position: 'absolute', top: '50%', right: 20, transform: [{ translateY: -10 }], flexDirection: 'row', columnGap: 10 }}>
-                                    <TouchableOpacity onPress={showDialog}>
-                                        <MaterialIcons name="edit" size={22} />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => setFieldValue('sources_id', 0)}>
-                                        <MaterialIcons name="clear" size={22} />
-                                    </TouchableOpacity>
-                                </View>
-                            </>
-                        )}
-                    </View>
-                </Surface>
-                <Surface style={{ elevation: 5, borderRadius: 5, backgroundColor: colors.surface }}>
-                    <Text style={{ padding: 10 }}>Статус бронювання:</Text>
-                    <RadioButton.Group value={values.status} onValueChange={(value) => setFieldValue('status', value)}>
-                        {eventStatuses.map(({ label, value, color }) => (
-                            <RadioButton.Item key={value} label={label} color={color} value={value} />
-                        ))}
-                    </RadioButton.Group>
-                </Surface>
-                <Surface style={{ rowGap: 10, elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface }}>
-                    <Text>Калькулятор ціни:</Text>
+                <DialogInput
+                    isDialogVisible={isDialogVisible}
+                    title={'Вкажіть текст'}
+                    message={"Вкажіть ім'я:"}
+                    hintInput={'Натисніть тут...'}
+                    submitInput={handleSubmitPromt}
+                    closeDialog={handleCancel}
+                >
                     <TextInput
-                        activeOutlineColor={colors.orangeColor}
-                        mode="outlined"
-                        label="Ціна за добу"
-                        value={String(values.price_per_day)}
-                        onChangeText={handleChange('price_per_day')}
-                        keyboardType="numeric"
+                        value={sourceName}
+                        onChangeText={(text) => setSourceName(text)}
+                        autoFocus={true}
+                        keyboardType="default"
                     />
-                    <TextInput
-                        activeOutlineColor={colors.orangeColor}
-                        mode="outlined"
-                        label="Кінцева ціна"
-                        value={String(values.final_price)}
-                        onChangeText={handleChange('final_price')}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        activeOutlineColor={colors.orangeColor}
-                        mode="outlined"
-                        label="Передоплата"
-                        value={String(values.down_payment)}
-                        onChangeText={handleChange('down_payment')}
-                        keyboardType="numeric"
-                    />
-                    <DatePickerInput
-                        mode="outlined"
-                        locale="en-GB"
-                        label="Дата платежу"
-                        inputMode="start"
-                        activeOutlineColor={colors.orangeColor}
-                        value={values.down_payment_date}
-                        onChange={(value) => setFieldValue('down_payment_date', value)}
-                    />
-                    <View>
-                        <Text style={{ fontWeight: "800", fontSize: 17 }}>Оплата на місці:</Text>
-                        <Text style={{ fontWeight: "800", fontSize: 17, color: colors.notification }}>{values.payment_on_place}</Text>
-                    </View>
-                </Surface>
-
-                <TextInput
-                    activeOutlineColor={colors.orangeColor}
-                    multiline
-                    mode="outlined"
-                    label="Примітки"
-                    value={String(values.notes)}
-                    onChangeText={handleChange('notes')}
-                    keyboardType="default"
-                />
-            </View>
-
-            <DialogInput
-                isDialogVisible={isDialogVisible}
-                title={'Вкажіть текст'}
-                message={"Вкажіть ім'я:"}
-                hintInput={'Натисніть тут...'}
-                submitInput={handleSubmitPromt}
-                closeDialog={handleCancel}
-            >
-                <TextInput
-                    value={sourceName}
-                    onChangeText={(text) => setSourceName(text)}
-                    autoFocus={true}
-                    keyboardType="default"
-                />
-            </DialogInput>
-        </Fragment>
-    )
+                </DialogInput>
+            </Fragment>
+        )
 }
