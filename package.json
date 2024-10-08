@@ -37,6 +37,7 @@
     "react-native-collapsible": "^1.6.1",
     "react-native-dialog": "^9.3.0",
     "react-native-dialog-input": "^1.0.8",
+    "react-native-draggable-flatlist": "^4.0.1",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-pager-view": "6.3.0",
     "react-native-pagination": "^1.5.5",

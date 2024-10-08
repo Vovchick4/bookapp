@@ -19,7 +19,7 @@ const Modal_States = {
     filter: "filter",
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 40;
 
 export default function Home({ navigation: { navigate } }: any) {
     const { colors } = useAppTheme();

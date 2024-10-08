@@ -5,6 +5,7 @@ import DropDown from "react-native-paper-dropdown";
 import { Foundation, MaterialIcons } from "@expo/vector-icons";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome3 from 'react-native-vector-icons/FontAwesome5';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 import DialogInput from 'react-native-dialog-input';
 import { addDays, differenceInDays, format } from "date-fns";
@@ -301,13 +302,15 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                 .catch((err) => console.error('Error opening Telegram:', err));
         };
 
-        const handleViber = () => {
+         const handleWhatsApp = () => {
             setModalVisible(false);
-            Linking.openURL(`viber://chat?number=${values.phone}`)
-                .catch((err) => console.error('Error opening Viber:', err));
-        };
+            Linking.openURL(`whatsapp://send?phone=${values.phone}`)
+              .catch((err) => console.error('Error opening WhatsApp:', err));
+         };
 
-        return (
+
+
+    return (
             <Fragment>
                 <View style={{flex: 1, rowGap: 10, paddingHorizontal: 10, paddingTop: 10, paddingBottom: 50}}>
                     <Surface style={{elevation: 5, borderRadius: 5, padding: 10, backgroundColor: colors.surface}}>
@@ -520,12 +523,12 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                                                     <Text style={{ marginTop: 8 }}>Телефон</Text>
                                                 </TouchableOpacity>
 
-                                                <TouchableOpacity onPress={handleViber} style={{ alignItems: 'center', marginHorizontal: 10 }}>
-                                                    <FontAwesome3 name="viber" size={35} color="black" />
-                                                    <Text style={{ marginTop: 8 }}>Viber</Text>
+                                                <TouchableOpacity onPress={handleWhatsApp} style={{ alignItems: 'center', marginHorizontal: 10 }}>
+                                                    <FontAwesome name="whatsapp" size={35} color="black" />
+                                                    <Text style={{ marginTop: 8 }}>WhatsApp</Text>
                                                 </TouchableOpacity>
 
-                                                <TouchableOpacity onPress={handleTelegram} style={{ alignItems: 'center', marginHorizontal: 10 }}>
+                                                <TouchableOpacity onPress={handleTelegram} style={{ alignItems: 'center', marginHorizontal: 10}}>
                                                     <FontAwesome3 name="telegram" size={35} color="black" />
                                                     <Text style={{ marginTop: 8 }}>Telegram</Text>
                                                 </TouchableOpacity>

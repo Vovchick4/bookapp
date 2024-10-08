@@ -1,7 +1,8 @@
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { format, utcToZonedTime } from "date-fns-tz";
 import { ActivityIndicator } from "react-native-paper";
 import { Feather } from "@expo/vector-icons";
-import { useDeferredValue, useEffect, useRef, useState, useTransition } from "react";
+import { useDeferredValue, useTransition} from "react";
 import { addDays, addMonths, differenceInDays, eachDayOfInterval, isSameDay, isSaturday, isSunday, isWithinInterval } from "date-fns";
 import {
     Animated,
@@ -16,6 +17,8 @@ import {
     View
 } from "react-native";
 
+import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import hexToRgba from "../utils/hex-to-rgba";
 import { IRoomEntity } from "../types/room.entity";
 import defineBgColor from "../utils/define-bg-color";
@@ -67,6 +70,13 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
     const [isPending, startTransiton] = useTransition();
     const translateYValue = useRef(new Animated.Value(0)).current;
     const deviceWidth = Dimensions.get('window').width;
+    const [roomOrder, setRoomOrder] = useState<IRoomEntity[]>([]);
+
+    useEffect(() => {
+        if (rooms) {
+            loadRoomOrder(rooms);
+        }
+    }, [rooms]);
 
     useEffect(() => {
         if (date) {
@@ -75,6 +85,43 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
             onChangeInterval(initialDates, 0);
         }
     }, [date, calendarViewType]);
+
+    const loadRoomOrder = async (initialRooms: IRoomEntity[]) => {
+        try {
+            const savedOrder = await AsyncStorage.getItem('roomOrder');
+            if (savedOrder) {
+                const parsedOrder = JSON.parse(savedOrder);
+                const validOrder = parsedOrder.filter((id: string) =>
+                    initialRooms.some(room => room.id.toString() === id)
+                );
+
+                const newRoomIds = initialRooms
+                    .filter(room => !validOrder.includes(room.id.toString()))
+                    .map(room => room.id.toString());
+                const finalOrder = [...validOrder, ...newRoomIds];
+
+                const sortedRooms = finalOrder.map(id =>
+                    initialRooms.find(room => room.id.toString() === id)
+                ).filter(Boolean) as IRoomEntity[];
+
+                setRoomOrder(sortedRooms);
+            } else {
+                setRoomOrder(initialRooms);
+            }
+        } catch (error) {
+            console.error('Error loading room order:', error);
+            setRoomOrder(initialRooms);
+        }
+    };
+
+    const saveRoomOrder = async (newOrder: IRoomEntity[]) => {
+        try {
+            const orderIds = newOrder.map(room => room.id.toString());
+            await AsyncStorage.setItem('roomOrder', JSON.stringify(orderIds));
+        } catch (error) {
+            console.error('Error saving room order:', error);
+        }
+    };
 
     const handleStickyScroll = Animated.event(
         [{ nativeEvent: { contentOffset: { y: translateYValue } } }],
@@ -115,13 +162,43 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
         setDisplayedDates([...deferredDates, ...newDates]);
     };
 
-    const RenderRoomRows = ({ week }: { week: Date }) => {
-        return rooms && rooms.length !== 0 && rooms.map((room, roomIndex) => {
+    const renderItem = useCallback(({ item, drag, isActive }: RenderItemParams<IRoomEntity>) => {
+        return (
+            <TouchableOpacity
+                style={{
+                    flex: 1,
+                    height: 50,
+                    paddingLeft: 10,
+                    alignItems: 'flex-start',
+                    justifyContent: 'center',
+                    backgroundColor: isActive ? 'lightblue' : defineBgColor(item),
+                    borderBottomWidth: 1,
+                    borderRightWidth: 1,
+                    borderRightColor: colors.menuColor,
+                    borderBottomColor: colors.menuColor,
+                    borderLeftColor: item.with_color ? defineBgColor(item, 1) : 'transparent',
+                    borderLeftWidth: 4
+                }}
+                onPress={() => navigate('CalendarController', { room_id: item.id, mode: "update", type: "room", rooms: JSON.stringify(rooms) })}
+                onLongPress={drag}
+            >
+                <Text
+                    style={{ fontFamily: 'Roboto', fontSize: deviceWidth >= 360 ? 12 : 10 }}
+                    numberOfLines={2}
+                    allowFontScaling={false}
+                >
+                    {item.name}
+                </Text>
+            </TouchableOpacity>
+        );
+    }, [colors, deviceWidth, navigate, rooms]);
+
+    const RenderRoomRows = useCallback(({ week }: { week: Date }) => {
+        return roomOrder.map((room) => {
             const endDate = addDays(week, 1);
             const events = getEventsForRoomAndDay(room, week, endDate);
-
             return (
-                <View key={roomIndex}>
+                <View key={room.id} style={styles.roomRow}>
                     <TouchableNativeFeedback
                         background={TouchableNativeFeedback.Ripple(colors.primary, false)}
                         onPress={() => navigate("CalendarController", { mode: "create", is_room_vis: false, type: "event", room_id: room.id, roomName: room.name, start_date: new Date(week) })}
@@ -129,20 +206,20 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                         <View style={[styles.roomRow, { width: 50 }]}>
                             <View
                                 style={[styles.roomCell,
-                                {
-                                    backgroundColor: defineBgColor(room) !== 'transparent' ? defineBgColor(room, isSaturday(week) || isSunday(week) ? 0.1 : 0.2) : ((isSaturday(week) || isSunday(week)) && (events?.length === 0)) ? hexToRgba(colors.grayColor, 0.1) || "" : defineBgColor(room),
-                                    borderRightWidth: 1,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: colors.grayColor,
-                                    borderRightColor:
-                                        (events && events.length > 0) ?
-                                            isWithinInterval(addDays(week, 1), {
-                                                start: new Date(events[0].start_date),
-                                                end: new Date(events[0].end_date)
-                                            }) ? hexToRgba(statusesColors[events[0].status], 1) || "red" : colors.grayColor : colors.grayColor,
-                                    paddingRight: (events && events.length > 0) ? isSameDay(week, new Date(events[0].end_date)) ? 22 : 0 : 0,
-                                    paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 22 : 0 : 0,
-                                }]}>
+                                    {
+                                        backgroundColor: defineBgColor(room) !== 'transparent' ? defineBgColor(room, isSaturday(week) || isSunday(week) ? 0.1 : 0.2) : ((isSaturday(week) || isSunday(week)) && (events?.length === 0)) ? hexToRgba(colors.grayColor, 0.1) || "" : defineBgColor(room),
+                                        borderRightWidth: 1,
+                                        borderBottomWidth: 1,
+                                        borderBottomColor: colors.grayColor,
+                                        borderRightColor:
+                                            (events && events.length > 0) ?
+                                                isWithinInterval(addDays(week, 1), {
+                                                    start: new Date(events[0].start_date),
+                                                    end: new Date(events[0].end_date)
+                                                }) ? hexToRgba(statusesColors[events[0].status], 1) || "red" : colors.grayColor : colors.grayColor,
+                                        paddingRight: (events && events.length > 0) ? isSameDay(week, new Date(events[0].end_date)) ? 22 : 0 : 0,
+                                        paddingLeft: (events && events.length > 0) ? isSameDay(week, new Date(events[0].start_date)) ? 22 : 0 : 0,
+                                    }]}>
                                 {events && events.length > 0 && events.map((event, eventIndex) => {
                                     const findedSameBookDate = room.bookings.find(({ end_date }) => end_date === event.start_date);
                                     const findedSameBookDateS = room.bookings.find(({ start_date }) => start_date === event.end_date);
@@ -187,7 +264,7 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                 </View>
             );
         });
-    };
+    }, [roomOrder, colors, statusesColors, navigate, changeActiveBookId]);
 
     const RenderWeekView = () => {
         return (
@@ -219,16 +296,16 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                             </View>}
                         </View>
                         {!isLoadingRooms && (
-                            <ScrollView style={{ width: 100 }}>
-                                {rooms && rooms.length > 0 && rooms.map((room, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={{ flex: 1, height: 50, paddingLeft: 10, alignItems: 'flex-start', justifyContent: 'center', backgroundColor: defineBgColor(room), borderBottomWidth: 1, borderRightWidth: 1, borderRightColor: colors.menuColor, borderBottomColor: colors.menuColor, borderLeftColor: room.with_color ? defineBgColor(room, 1) : 'transparent', borderLeftWidth: 4 }}
-                                        onPress={() => navigate('CalendarController', { room_id: room.id, mode: "update", type: "room", rooms: JSON.stringify(rooms) })}>
-                                        <Text style={{ fontFamily: 'Roboto', fontSize: deviceWidth >= 360 ? 12 : 10 }} numberOfLines={2} allowFontScaling={false}>{room.name}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
+                            <DraggableFlatList
+                                data={roomOrder}
+                                renderItem={renderItem}
+                                keyExtractor={(item) => item.id.toString()}
+                                onDragEnd={({ data }) => {
+                                    setRoomOrder(data);
+                                    saveRoomOrder(data);
+                                }}
+                                scrollEnabled={false}
+                            />
                         )}
                     </View>
 
@@ -287,7 +364,8 @@ export default function WeekCalendar({ date, rooms, navigate, isLoadingRooms, st
                         ))}
                     </ScrollView>
                 </View>
-            </ScrollView>)
+            </ScrollView>
+        );
     };
 
     return <View style={styles.main}>{RenderWeekView()}</View>;
