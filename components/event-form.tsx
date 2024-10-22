@@ -234,25 +234,6 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
         });
     }, [values.status, roomName])
 
-    useEffect(() => {
-        if (values.start_date && values.end_date && values.price_per_day) {
-            const daysDifference = differenceInDays(values.end_date, new Date(values.start_date));
-            const finalPrice = values.price_per_day * daysDifference;
-            setFieldValue('final_price', finalPrice);
-        }
-    }, [values.start_date, values.end_date, values.price_per_day]);
-
-    useEffect(() => {
-        // Calculate payment_on_place whenever final_price or down_payment changes
-        const paymentOnPlace = values.final_price - values.down_payment;
-        setFieldValue('payment_on_place', paymentOnPlace);
-        if (values.start_date && values.end_date) {
-            const daysDifference = differenceInDays(values.end_date, new Date(values.start_date));
-            const finalPrice = Math.ceil(values.final_price / daysDifference);
-            setFieldValue('price_per_day', finalPrice);
-        }
-    }, [values.final_price, values.down_payment]);
-
     const handleStartDateChange = useCallback(
         (value: Date | undefined) => {
             if (value === undefined) {
@@ -628,6 +609,22 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                         backgroundColor: colors.surface
                     }}>
                         <Text>Калькулятор ціни:</Text>
+                        <Button style={{width: "100%"}} textColor={colors.surface} buttonColor={colors.orangeColor} mode="outlined" onPress={() => {
+                            if(values.end_date && values.start_date) {
+                                const daysDifference = 1 + differenceInDays(values.end_date, new Date(values.start_date));
+                                if(values.price_per_day && values.price_per_day !== 0) {
+                                    const finalPrice = values.price_per_day * daysDifference;
+                                    setFieldValue('final_price', finalPrice);
+                                    setFieldValue('payment_on_place', finalPrice - (values.down_payment ?? 0));
+                                } else if (values.final_price && values.final_price !== 0) {
+                                    setFieldValue('price_per_day', Math.ceil(values.final_price / daysDifference));
+                                } else {
+                                    Alert.alert('Має бути ціна за добу або фіналька ціна');
+                                }
+                            } else {
+                                Alert.alert('Початок та кінцева дата обовязкова');
+                            }
+                        }}>Вирухувати ціну</Button>
                         <TextInput
                             activeOutlineColor={colors.orangeColor}
                             mode="outlined"
