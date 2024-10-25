@@ -1,13 +1,10 @@
 import { useFormik } from "formik";
-import { Alert, Linking, TouchableOpacity, View, Modal } from "react-native";
+import { Alert, Linking, TouchableOpacity, View } from "react-native";
 import { utcToZonedTime } from "date-fns-tz";
 import DropDown from "react-native-paper-dropdown";
 import { Foundation, MaterialIcons } from "@expo/vector-icons";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import FontAwesome3 from "react-native-vector-icons/FontAwesome5";
-
 import DialogInput from "react-native-dialog-input";
-import { addDays, differenceInDays, format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { DatePickerInput, TimePickerModal } from "react-native-paper-dates";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
@@ -214,8 +211,24 @@ export default function EventForm({
           ) {
             if (data[event]) {
               if (event === "start_date" || event === "end_date") {
-                setFieldValue("start_date", new Date(data["start_date"]));
-                setFieldValue("end_date", new Date(data["end_date"]));
+                setFieldValue(
+                  "start_date",
+                  new Date(
+                    format(
+                      utcToZonedTime(data["start_date"], targetTimeZone),
+                      "yyyy-MM-dd"
+                    )
+                  )
+                );
+                setFieldValue(
+                  "end_date",
+                  new Date(
+                    format(
+                      utcToZonedTime(data["end_date"], targetTimeZone),
+                      "yyyy-MM-dd"
+                    )
+                  )
+                );
               } else if (
                 event === "down_payment_date" &&
                 data["down_payment_date"]
@@ -291,10 +304,7 @@ export default function EventForm({
   useEffect(() => {
     if (values.start_date && values.end_date) {
       if (values.price_per_day || values.final_price) {
-        let daysDifference = differenceInDays(
-          new Date(values.end_date),
-          new Date(values.start_date)
-        );
+        let daysDifference = countDaysUTC(values.start_date, values.end_date);
         let finalPrice = (values.price_per_day ?? 1) * daysDifference;
         let pricePerDay = finalPrice / daysDifference;
         setFieldValue("final_price", finalPrice);
@@ -356,31 +366,6 @@ export default function EventForm({
   const handleSubmitPromt = (value: string) => {
     mutate({ name: value });
     setDialogVisible(false);
-  };
-
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const handlePress = () => setModalVisible(true);
-
-  const handleCall = () => {
-    setModalVisible(false);
-    Linking.openURL(`tel:${values.phone}`).catch((err) =>
-      console.error("Error opening phone dialer:", err)
-    );
-  };
-
-  const handleTelegram = () => {
-    setModalVisible(false);
-    Linking.openURL(`https://telegram.me/${values.phone}`).catch((err) =>
-      console.error("Error opening Telegram:", err)
-    );
-  };
-
-  const handleViber = () => {
-    setModalVisible(false);
-    Linking.openURL(`viber://chat?number=${values.phone}`).catch((err) =>
-      console.error("Error opening Viber:", err)
-    );
   };
 
   return (
@@ -481,14 +466,7 @@ export default function EventForm({
             />
           </View>
           <Counter
-            count={
-              values.start_date && values.end_date
-                ? differenceInDays(
-                    values.start_date || new Date(),
-                    values.end_date || new Date()
-                  )
-                : 0
-            }
+            count={countDaysUTC(values.start_date, values.end_date)}
             onPress={(type) => {
               if (values.start_date) {
                 if (values.end_date) {
@@ -584,115 +562,23 @@ export default function EventForm({
               onChangeText={handleChange("phone")}
               keyboardType="phone-pad"
             />
-
             <View
               style={{
                 position: "absolute",
-                bottom: 15,
+                top: "50%",
                 right: 20,
+                transform: [{ translateY: -10 }],
               }}
             >
               <TouchableOpacity
-                onPress={handlePress}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
+                onPress={() => {
+                  Linking.openURL(`tel:${values.phone}`).catch((err) =>
+                    console.error("Error opening phone dialer:", err)
+                  );
                 }}
               >
-                <Foundation name="telephone" size={25} color="black" />
+                <Foundation name="telephone" size={25} />
               </TouchableOpacity>
-
-              <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(!modalVisible)}
-              >
-                <View
-                  style={{
-                    flex: 1,
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                  }}
-                >
-                  <View
-                    style={{
-                      width: "100%",
-                      height: "30%",
-                      backgroundColor: "white",
-                      borderTopLeftRadius: 20,
-                      borderTopRightRadius: 20,
-                      padding: 10,
-                      paddingLeft: 15,
-                      paddingRight: 15,
-                      alignItems: "center",
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: -2 },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 4,
-                    }}
-                  >
-                    <TouchableOpacity
-                      style={{
-                        position: "absolute",
-                        top: 10,
-                        right: 10,
-                      }}
-                      onPress={() => setModalVisible(!modalVisible)}
-                    >
-                      <Ionicons name="close" size={30} color="black" />
-                    </TouchableOpacity>
-
-                    <Text
-                      style={{
-                        marginBottom: 30,
-                        marginTop: 10,
-                        textAlign: "center",
-                        fontSize: 18,
-                        fontWeight: "400",
-                      }}
-                    >
-                      Відкрити за допомогою:
-                    </Text>
-
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-around",
-                        alignItems: "center",
-                        width: "100%",
-                        height: "50%",
-                      }}
-                    >
-                      <TouchableOpacity
-                        onPress={handleCall}
-                        style={{ alignItems: "center", marginHorizontal: 10 }}
-                      >
-                        <MaterialIcons name="phone" size={35} color="black" />
-                        <Text style={{ marginTop: 8 }}>Телефон</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={handleViber}
-                        style={{ alignItems: "center", marginHorizontal: 10 }}
-                      >
-                        <FontAwesome3 name="viber" size={35} color="black" />
-                        <Text style={{ marginTop: 8 }}>Viber</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={handleTelegram}
-                        style={{ alignItems: "center", marginHorizontal: 10 }}
-                      >
-                        <FontAwesome3 name="telegram" size={35} color="black" />
-                        <Text style={{ marginTop: 8 }}>Telegram</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </Modal>
             </View>
           </View>
           <TextInput
@@ -807,9 +693,9 @@ export default function EventForm({
             value={String(values.price_per_day)}
             onChangeText={(text) => {
               if (values.start_date && values.end_date) {
-                let daysDifference = differenceInDays(
-                  values.end_date,
-                  new Date(values.start_date)
+                let daysDifference = countDaysUTC(
+                  values.start_date,
+                  values.end_date
                 );
                 let final_price = Number(Number(text) * daysDifference);
                 setFieldValue("final_price", final_price);
@@ -830,9 +716,9 @@ export default function EventForm({
             onChangeText={(number) => {
               let formatted_number = Number(number);
               if (values.start_date && values.end_date) {
-                let daysDifference = differenceInDays(
-                  values.end_date,
-                  new Date(values.start_date)
+                let daysDifference = countDaysUTC(
+                  values.start_date,
+                  values.end_date
                 );
                 setFieldValue(
                   "price_per_day",
@@ -909,4 +795,35 @@ export default function EventForm({
       />
     </Fragment>
   );
+}
+
+/**
+ * Counts the number of days between two dates in UTC, including the start and end dates.
+ *
+ * @param {string} startDate - The start date in ISO format (e.g., "2024-10-25T00:00:00.000Z")
+ * @param {string} endDate - The end date in ISO format (e.g., "2024-10-28T00:00:00.000Z")
+ * @returns {number} The count of days, inclusive of both start and end dates
+ */
+function countDaysUTC(startDate: Date | undefined, endDate: Date | undefined) {
+  if (!startDate || !endDate) {
+    return 0;
+  }
+  // Parse the dates as UTC
+  const start = Date.UTC(
+    new Date(startDate).getUTCFullYear(),
+    new Date(startDate).getUTCMonth(),
+    new Date(startDate).getUTCDate()
+  );
+
+  const end = Date.UTC(
+    new Date(endDate).getUTCFullYear(),
+    new Date(endDate).getUTCMonth(),
+    new Date(endDate).getUTCDate()
+  );
+
+  // Calculate the difference in days (do not add 1)
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const dayDifference = Math.round((end - start) / msPerDay);
+
+  return dayDifference;
 }
