@@ -7,12 +7,12 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, IconButton, Menu } from "react-native-paper";
 
 import { useAuth } from "../contexts/auth";
-import isTrialDate from "../utils/is_trial_date";
+// import isTrialDate from "../utils/is_trial_date";
 import { DrawerContent, StatusBar } from "../components";
 import CalendarController from "../screens/calendar-controller";
 import { ECalendarViewType, useCalendar } from "../contexts/calendar";
 import { useAppTheme } from "../providers/with-react-paper-ui/with-react-paper-ui";
-import { SubscriptionScreen, CompanyScreen, ProfileScreen, FinancesScreen, EmployeeScreen, SettingsScreen } from "../screens";
+import { CompanyScreen, ProfileScreen, FinancesScreen, EmployeeScreen } from "../screens"; // Add SubscriptionScreen and SettingsScreen as needed
 
 const HomeScreen = lazy(() => import('../screens/home'));
 // const CalendarControllerScreen = lazy(() => import('../screens/calendar-controller'));
@@ -52,7 +52,7 @@ export default function DefaultLayout() {
         user?.company ? (
             <Fragment>
                 <StatusBar backgroundColor={colors.menuColor} />
-                {user.is_subscription || isTrialDate(user.trial_date) ? (
+                {/*{user.is_subscription || isTrialDate(user.trial_date) ? (*/}
                     <Drawer.Navigator
                         drawerContent={(props) => <DrawerContent {...props} />}
                         screenOptions={{
@@ -116,15 +116,15 @@ export default function DefaultLayout() {
                             }}
                             component={CalendarController}
                         />
-                        <Drawer.Screen
+                       {/* <Drawer.Screen
                             name="Settings"
                             options={{
                                 title: "Налаштування"
                             }}
                             component={SettingsScreen}
-                        />
+                        />*/}
                     </Drawer.Navigator>
-                ) : (
+                {/*) : (
                     <Stack.Navigator
                         screenOptions={{
                             headerStyle: {
@@ -142,7 +142,7 @@ export default function DefaultLayout() {
                             })}
                         />
                     </Stack.Navigator>
-                )}
+                )}*/}
             </Fragment>
         ) : (
             <Fragment>
