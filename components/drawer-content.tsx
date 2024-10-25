@@ -53,13 +53,13 @@ export default function DrawerContent(props: any) {
                         onPress={() => props.navigation.navigate("Employees")}
                     />}
 
-                <Drawer.Item
-                    rippleColor={colors.grayColor}
-                    style={{ backgroundColor: colors.surface, borderRadius: 15, width: '100%', marginLeft: 0 }}
-                    icon="cog"
-                    label="Налаштування"
-                    onPress={() => props.navigation.navigate("Settings")}
-                />
+                {/*<Drawer.Item*/}
+                {/*    rippleColor={colors.grayColor}*/}
+                {/*    style={{ backgroundColor: colors.surface, borderRadius: 15, width: '100%', marginLeft: 0 }}*/}
+                {/*    icon="cog"*/}
+                {/*    label="Налаштування"*/}
+                {/*    onPress={() => props.navigation.navigate("Settings")}*/}
+                {/*/>*/}
             </ScrollView>
 
             <View style={{ borderTopColor: colors.grayColor, borderTopWidth: 1 }}>

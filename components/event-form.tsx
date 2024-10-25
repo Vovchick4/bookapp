@@ -2,10 +2,9 @@ import { useFormik } from "formik";
 import { Alert, Linking, TouchableOpacity, View, Modal } from "react-native";
 import { utcToZonedTime } from "date-fns-tz";
 import DropDown from "react-native-paper-dropdown";
-import { Foundation, MaterialIcons } from "@expo/vector-icons";
+import { Foundation, MaterialIcons, Fontisto, FontAwesome } from "@expo/vector-icons";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesome3 from 'react-native-vector-icons/FontAwesome5';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 import DialogInput from 'react-native-dialog-input';
 import { addDays, differenceInDays, format } from "date-fns";
@@ -518,19 +517,19 @@ export default function EventForm({ mode, start_date, bookId, room_id, is_room_v
                                                 width: '100%',
                                                 height: '50%',
                                             }}>
-                                                <TouchableOpacity onPress={handleCall} style={{ alignItems: 'center', marginHorizontal: 10 }}>
-                                                    <MaterialIcons name="phone" size={35} color="black" />
-                                                    <Text style={{ marginTop: 8 }}>Телефон</Text>
+                                                <TouchableOpacity onPress={handleCall} style={{ alignItems: 'center', marginHorizontal: 10}}>
+                                                    <FontAwesome name="phone" size={35} color="black"/>
+                                                    <Text style={{ marginTop: 18 }}>Телефон</Text>
                                                 </TouchableOpacity>
 
-                                                <TouchableOpacity onPress={handleWhatsApp} style={{ alignItems: 'center', marginHorizontal: 10 }}>
-                                                    <FontAwesome name="whatsapp" size={35} color="black" />
-                                                    <Text style={{ marginTop: 8 }}>WhatsApp</Text>
+                                                <TouchableOpacity onPress={handleWhatsApp} style={{ alignItems: 'center', marginHorizontal: 10}}>
+                                                    <Fontisto name="whatsapp" size={35} color="black"/>
+                                                    <Text style={{ marginTop: 18 }}>WhatsApp</Text>
                                                 </TouchableOpacity>
 
                                                 <TouchableOpacity onPress={handleTelegram} style={{ alignItems: 'center', marginHorizontal: 10}}>
-                                                    <FontAwesome3 name="telegram" size={35} color="black" />
-                                                    <Text style={{ marginTop: 8 }}>Telegram</Text>
+                                                    <FontAwesome5 name="telegram" size={35} color="black"/>
+                                                    <Text style={{ marginTop: 18 }}>Telegram</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
